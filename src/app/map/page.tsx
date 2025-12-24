@@ -1,13 +1,10 @@
 import PipBoyFrame from "@/components/layout/PipBoyFrame";
-import UkraineMap from "@/components/map/UkraineMap";
-import { getAlertedRegionIds } from "@/data/mockAlerts";
+import MapPageClient from "@/components/map/MapPageClient";
 
 export default function MapPage() {
-  const alertedRegions = getAlertedRegionIds();
-
   return (
     <PipBoyFrame activeTab="map">
-      <UkraineMap alertedRegions={alertedRegions} />
+      <MapPageClient />
     </PipBoyFrame>
   );
 }

@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "yoavbls.pretty-ts-errors",
+    "streetsidesoftware.code-spell-checker",
+    "formulahendry.auto-close-tag",
+    "formulahendry.auto-rename-tag",
+    "bradlc.vscode-tailwindcss"
+  ]
+}

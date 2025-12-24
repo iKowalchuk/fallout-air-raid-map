@@ -5,19 +5,22 @@ interface AlertStatusProps {
   alertCount: number;
 }
 
-export default function AlertStatus({ isActive, alertCount }: AlertStatusProps) {
+export default function AlertStatus({
+  isActive,
+  alertCount,
+}: AlertStatusProps) {
   return (
-    <div className="flex items-center gap-3 mb-4">
+    <div className="mb-4 flex items-center gap-3">
       <div className={`status-dot ${isActive ? "status-dot-alert" : ""}`} />
       <span
-        className={`text-lg md:text-xl font-[family-name:var(--font-pipboy)] tracking-wide ${
+        className={`font-[family-name:var(--font-pipboy)] text-lg tracking-wide md:text-xl ${
           isActive ? "glow-text-red-bright" : "glow-text"
         }`}
       >
         {isActive ? "AIR RAID ALERT" : "ALL CLEAR"}
       </span>
       {isActive && (
-        <span className="text-sm glow-text-red ml-2">
+        <span className="glow-text-red ml-2 text-sm">
           ({alertCount} областей)
         </span>
       )}
