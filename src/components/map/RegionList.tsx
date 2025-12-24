@@ -24,9 +24,7 @@ export default function RegionList({
         return (
           <div
             key={region.id}
-            className={`region-list-item cursor-pointer transition-all ${
-              isHovered ? "scale-105" : ""
-            }`}
+            className="region-list-item cursor-pointer transition-colors"
             onMouseEnter={() => onRegionHover(region.id)}
             onMouseLeave={() => onRegionHover(null)}
           >
