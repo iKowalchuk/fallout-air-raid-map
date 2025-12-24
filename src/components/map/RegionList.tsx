@@ -16,7 +16,7 @@ export default function RegionList({
   onRegionHover,
 }: RegionListProps) {
   return (
-    <div className="space-y-1 font-[family-name:var(--font-pipboy)] text-xs md:text-sm">
+    <div className="space-y-1 font-[family-name:var(--font-pipboy)] text-xs md:text-sm pl-2">
       {regions.map((region) => {
         const isAlert = alertedRegions.includes(region.id);
         const isHovered = hoveredRegion === region.id;

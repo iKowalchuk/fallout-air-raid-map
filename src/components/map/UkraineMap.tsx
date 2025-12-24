@@ -37,7 +37,7 @@ export default function UkraineMap({ alertedRegions }: UkraineMapProps) {
       {/* Main map layout */}
       <div className="flex-1 flex gap-4">
         {/* Left region list */}
-        <div className="w-32 md:w-40 overflow-y-auto">
+        <div className="w-36 md:w-44 overflow-y-auto overflow-x-visible">
           <RegionList
             regions={leftRegions}
             alertedRegions={alertedRegions}
@@ -56,7 +56,7 @@ export default function UkraineMap({ alertedRegions }: UkraineMapProps) {
         </div>
 
         {/* Right region list */}
-        <div className="w-32 md:w-40 overflow-y-auto">
+        <div className="w-36 md:w-44 overflow-y-auto overflow-x-visible">
           <RegionList
             regions={rightRegions}
             alertedRegions={alertedRegions}
