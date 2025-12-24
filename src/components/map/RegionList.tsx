@@ -34,13 +34,13 @@ export default function RegionList({
               }`}
             />
             <span
-              className={
+              className={`transition-all ${
                 isAlert
                   ? "glow-text-red"
                   : isHovered
-                  ? "glow-text-bright"
+                  ? "glow-text-bright text-sm md:text-base"
                   : "glow-text"
-              }
+              }`}
             >
               {region.nameUa}
             </span>
