@@ -11,8 +11,8 @@ export default function InfoPageClient() {
   const { alertCount, isLoading, source, lastUpdate } = useAlerts();
   const isAlertActive = alertCount > 0;
 
-  // Поки що використовуємо mock повідомлення
-  // TODO: В майбутньому можна додати real-time повідомлення через API
+  // Using mock messages for now
+  // TODO: Add real-time messages via API in the future
   const sortedMessages = [...MOCK_MESSAGES].sort(
     (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
   );

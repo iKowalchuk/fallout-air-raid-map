@@ -15,7 +15,7 @@ export const MOCK_ALERTS: AlertState[] = [
   { regionId: "chernihiv", isActive: true, alertType: "uav", startTime: new Date() },
   { regionId: "kyiv-city", isActive: true, alertType: "missile", startTime: new Date() },
   { regionId: "kyiv-oblast", isActive: true, alertType: "missile", startTime: new Date() },
-  // Окуповані території - постійна тривога
+  // Occupied territories - permanent alert
   { regionId: "crimea", isActive: true, alertType: "air_raid", startTime: null },
   { regionId: "sevastopol", isActive: true, alertType: "air_raid", startTime: null },
 ];

@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  // Якщо немає API ключа, повертаємо помилку
+  // If no API key, return error
   if (!API_KEY) {
     return new Response(
       JSON.stringify({ error: "API key not configured" }),
@@ -23,7 +23,7 @@ export async function GET() {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        // Підключаємося до SSE ендпоінту API
+        // Connect to API SSE endpoint
         const response = await fetch(`${API_BASE_URL}/api/states/live`, {
           headers: {
             "X-API-Key": API_KEY,
@@ -48,14 +48,14 @@ export async function GET() {
         const decoder = new TextDecoder();
         let buffer = "";
 
-        // Читаємо SSE потік
+        // Read SSE stream
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
           buffer += decoder.decode(value, { stream: true });
 
-          // Парсимо SSE події
+          // Parse SSE events
           const lines = buffer.split("\n");
           buffer = lines.pop() || "";
 
@@ -64,7 +64,7 @@ export async function GET() {
               try {
                 const eventData = JSON.parse(line.slice(6));
 
-                // Трансформуємо дані
+                // Transform data
                 const projectRegionId = apiToProjectRegionId(eventData.id);
                 if (projectRegionId) {
                   const transformedEvent = {
@@ -79,10 +79,10 @@ export async function GET() {
                   );
                 }
               } catch {
-                // Пропускаємо невалідні дані
+                // Skip invalid data
               }
             } else if (line.startsWith(":")) {
-              // Heartbeat/comment - пересилаємо як є
+              // Heartbeat/comment - forward as is
               controller.enqueue(encoder.encode(`${line}\n`));
             }
           }

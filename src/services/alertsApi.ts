@@ -24,17 +24,17 @@ interface ApiAlertEvent {
   changed: string;
 }
 
-// Конфігурація API
+// API Configuration
 const API_BASE_URL = process.env.ALERTS_API_URL || "https://alerts.com.ua";
 const API_KEY = process.env.ALERTS_API_KEY || "";
 
-// Визначення типу тривоги на основі API даних
-// API alerts.com.ua не надає тип тривоги, тому за замовчуванням "air_raid"
+// Determine alert type based on API data
+// alerts.com.ua API doesn't provide alert type, default to "air_raid"
 function determineAlertType(): AlertType {
   return "air_raid";
 }
 
-// Трансформація API response в AlertState[]
+// Transform API response to AlertState[]
 export function transformApiResponse(apiStates: ApiRegionState[]): AlertState[] {
   const alerts: AlertState[] = [];
 
@@ -55,7 +55,7 @@ export function transformApiResponse(apiStates: ApiRegionState[]): AlertState[] 
   return alerts;
 }
 
-// Отримання активних тривог через API
+// Fetch active alerts via API
 export async function fetchActiveAlerts(): Promise<AlertState[]> {
   if (!API_KEY) {
     console.warn("ALERTS_API_KEY not set, using mock data");
@@ -67,7 +67,7 @@ export async function fetchActiveAlerts(): Promise<AlertState[]> {
       headers: {
         "X-API-Key": API_KEY,
       },
-      next: { revalidate: 30 }, // Кешування на 30 секунд
+      next: { revalidate: 30 }, // Cache for 30 seconds
     });
 
     if (!response.ok) {
@@ -78,28 +78,28 @@ export async function fetchActiveAlerts(): Promise<AlertState[]> {
     return transformApiResponse(data.states);
   } catch (error) {
     console.error("Failed to fetch alerts from API:", error);
-    return MOCK_ALERTS; // Fallback на mock дані
+    return MOCK_ALERTS; // Fallback to mock data
   }
 }
 
-// Отримання списку ID регіонів з активними тривогами
+// Get list of region IDs with active alerts
 export async function fetchAlertedRegionIds(): Promise<string[]> {
   const alerts = await fetchActiveAlerts();
   return alerts.filter((a) => a.isActive).map((a) => a.regionId);
 }
 
-// Підрахунок активних тривог
+// Count active alerts
 export async function fetchActiveAlertCount(): Promise<number> {
   const alerts = await fetchActiveAlerts();
   return alerts.filter((a) => a.isActive).length;
 }
 
-// SSE Stream URL для клієнта
+// SSE Stream URL for client
 export function getSSEStreamUrl(): string {
   return "/api/alerts/stream";
 }
 
-// Парсинг SSE події
+// Parse SSE event
 export function parseSSEEvent(eventData: string): AlertState | null {
   try {
     const event: ApiAlertEvent = JSON.parse(eventData);
@@ -119,7 +119,7 @@ export function parseSSEEvent(eventData: string): AlertState | null {
   }
 }
 
-// Перевірка доступності API
+// Check API health
 export async function checkApiHealth(): Promise<boolean> {
   if (!API_KEY) return false;
 

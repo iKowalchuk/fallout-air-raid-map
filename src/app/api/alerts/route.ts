@@ -5,12 +5,12 @@ import { MOCK_ALERTS } from "@/data/mockAlerts";
 const API_BASE_URL = process.env.ALERTS_API_URL || "https://alerts.com.ua";
 const API_KEY = process.env.ALERTS_API_KEY || "";
 
-// Кешування відповіді
+// Response caching
 let cachedData: { data: unknown; timestamp: number } | null = null;
-const CACHE_TTL = 30 * 1000; // 30 секунд
+const CACHE_TTL = 30 * 1000; // 30 seconds
 
 export async function GET() {
-  // Якщо немає API ключа, повертаємо mock дані
+  // If no API key, return mock data
   if (!API_KEY) {
     return NextResponse.json({
       alerts: MOCK_ALERTS.map((alert) => ({
@@ -24,7 +24,7 @@ export async function GET() {
     });
   }
 
-  // Перевірка кешу
+  // Check cache
   if (cachedData && Date.now() - cachedData.timestamp < CACHE_TTL) {
     return NextResponse.json(cachedData.data);
   }
@@ -42,7 +42,7 @@ export async function GET() {
 
     const apiData = await response.json();
 
-    // Трансформація даних
+    // Transform data
     const alerts = apiData.states
       .filter((state: { alert: boolean }) => state.alert)
       .map((state: { id: number; changed: string }) => {
@@ -56,13 +56,21 @@ export async function GET() {
       })
       .filter((alert: { regionId: string | null }) => alert.regionId !== null);
 
+    // Add occupied territories (Crimea, Sevastopol) - permanent alert
+    const occupiedAlerts = [
+      { regionId: "crimea", isActive: true, alertType: "air_raid", startTime: null },
+      { regionId: "sevastopol", isActive: true, alertType: "air_raid", startTime: null },
+    ];
+
+    const allAlerts = [...alerts, ...occupiedAlerts];
+
     const responseData = {
-      alerts,
+      alerts: allAlerts,
       source: "api",
       lastUpdate: apiData.last_update || new Date().toISOString(),
     };
 
-    // Оновлення кешу
+    // Update cache
     cachedData = {
       data: responseData,
       timestamp: Date.now(),
@@ -72,7 +80,7 @@ export async function GET() {
   } catch (error) {
     console.error("Failed to fetch from alerts API:", error);
 
-    // Fallback на mock дані
+    // Fallback to mock data
     return NextResponse.json({
       alerts: MOCK_ALERTS.map((alert) => ({
         regionId: alert.regionId,

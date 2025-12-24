@@ -26,8 +26,8 @@ interface UseAlertsResult {
   refresh: () => Promise<void>;
 }
 
-const POLLING_INTERVAL = 30000; // 30 секунд
-const SSE_RECONNECT_DELAY = 5000; // 5 секунд
+const POLLING_INTERVAL = 30000; // 30 seconds
+const SSE_RECONNECT_DELAY = 5000; // 5 seconds
 
 export function useAlerts(): UseAlertsResult {
   const [alerts, setAlerts] = useState<AlertState[]>([]);
@@ -39,7 +39,7 @@ export function useAlerts(): UseAlertsResult {
   const eventSourceRef = useRef<EventSource | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Функція для отримання даних через HTTP
+  // Fetch alerts via HTTP
   const fetchAlerts = useCallback(async () => {
     try {
       const response = await fetch("/api/alerts");
@@ -67,7 +67,7 @@ export function useAlerts(): UseAlertsResult {
     }
   }, []);
 
-  // Підключення до SSE
+  // Connect to SSE
   const connectSSE = useCallback(() => {
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
@@ -85,7 +85,7 @@ export function useAlerts(): UseAlertsResult {
           return;
         }
 
-        // Оновлюємо стан конкретного регіону
+        // Update state for specific region
         setAlerts((prevAlerts) => {
           const existingIndex = prevAlerts.findIndex(
             (a) => a.regionId === data.regionId
@@ -99,17 +99,17 @@ export function useAlerts(): UseAlertsResult {
           };
 
           if (existingIndex >= 0) {
-            // Оновлюємо існуючий алерт
+            // Update existing alert
             const newAlerts = [...prevAlerts];
             if (data.isActive) {
               newAlerts[existingIndex] = updatedAlert;
             } else {
-              // Видаляємо алерт якщо він неактивний
+              // Remove alert if inactive
               newAlerts.splice(existingIndex, 1);
             }
             return newAlerts;
           } else if (data.isActive) {
-            // Додаємо новий алерт
+            // Add new alert
             return [...prevAlerts, updatedAlert];
           }
 
@@ -127,7 +127,7 @@ export function useAlerts(): UseAlertsResult {
       eventSource.close();
       eventSourceRef.current = null;
 
-      // Перепідключення через деякий час
+      // Reconnect after delay
       setTimeout(connectSSE, SSE_RECONNECT_DELAY);
     };
 
@@ -137,14 +137,14 @@ export function useAlerts(): UseAlertsResult {
     };
   }, []);
 
-  // Початкове завантаження
+  // Initial load
   useEffect(() => {
     fetchAlerts();
 
-    // Спробуємо підключитися до SSE
+    // Try to connect to SSE
     connectSSE();
 
-    // Fallback polling якщо SSE не працює
+    // Fallback polling if SSE doesn't work
     pollingIntervalRef.current = setInterval(fetchAlerts, POLLING_INTERVAL);
 
     return () => {
@@ -157,7 +157,7 @@ export function useAlerts(): UseAlertsResult {
     };
   }, [fetchAlerts, connectSSE]);
 
-  // Обчислювані значення
+  // Computed values
   const alertedRegionIds = alerts.filter((a) => a.isActive).map((a) => a.regionId);
   const alertCount = alertedRegionIds.length;
 
