@@ -24,7 +24,10 @@ export default function RegionList({
         return (
           <div
             key={region.id}
-            className="region-list-item cursor-pointer"
+            className={`region-list-item cursor-pointer transition-transform duration-150 origin-left ${
+              isHovered ? "scale-105" : ""
+            }`}
+            style={{ willChange: "transform" }}
             onMouseEnter={() => onRegionHover(region.id)}
             onMouseLeave={() => onRegionHover(null)}
           >
