@@ -2,6 +2,7 @@
 
 interface UkraineMapSVGProps {
   alertedRegions: string[];
+  hoveredRegion?: string | null;
   onRegionHover?: (regionId: string | null) => void;
   onRegionClick?: (regionId: string) => void;
 }
@@ -46,22 +47,32 @@ const REGION_PATHS: Record<string, string> = {
   "mykolaiv": "M268,268 L298,295 L342,298 L365,268 L385,285 L398,338 L378,378 L335,398 L292,378 L262,338 L255,298 Z",
   "odesa": "M162,272 L178,248 L200,258 L232,252 L255,298 L262,338 L292,378 L282,418 L248,448 L195,458 L148,438 L132,388 L145,325 Z",
   "kherson": "M335,398 L378,378 L398,338 L398,418 L408,458 L452,488 L438,528 L385,548 L332,528 L305,488 L298,438 Z",
+
+  // Crimea (occupied territory)
+  "crimea": "M385,548 L438,528 L495,535 L548,555 L575,590 L545,620 L490,635 L430,625 L385,605 L365,575 L370,555 Z",
+  "sevastopol": "M365,575 L385,605 L370,620 L350,610 L355,590 Z",
 };
 
 export default function UkraineMapSVG({
   alertedRegions,
+  hoveredRegion,
   onRegionHover,
   onRegionClick,
 }: UkraineMapSVGProps) {
   const getRegionClass = (regionId: string) => {
     const isAlert = alertedRegions.includes(regionId);
+    const isHovered = hoveredRegion === regionId;
+
+    if (isHovered) {
+      return `region-path ${isAlert ? "region-path-alert-hover" : "region-path-safe-hover"}`;
+    }
     return `region-path ${isAlert ? "region-path-alert" : "region-path-safe"}`;
   };
 
   return (
     <svg
-      viewBox="0 0 700 580"
-      className="w-full h-full max-h-[420px]"
+      viewBox="0 0 700 660"
+      className="w-full h-full max-h-[450px]"
       style={{ filter: "drop-shadow(0 0 10px rgba(0, 255, 0, 0.25))" }}
     >
       {/* Glow filter */}

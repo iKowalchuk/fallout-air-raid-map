@@ -252,7 +252,8 @@ body {
   fill: var(--pipboy-green-dark);
 }
 
-.region-path-safe:hover {
+.region-path-safe:hover,
+.region-path-safe-hover {
   fill: var(--pipboy-green-dim);
   stroke: var(--pipboy-green);
   stroke-width: 2;
@@ -263,10 +264,12 @@ body {
   animation: region-pulse 1s ease-in-out infinite;
 }
 
-.region-path-alert:hover {
+.region-path-alert:hover,
+.region-path-alert-hover {
   fill: var(--pipboy-alert-red);
   stroke: var(--pipboy-alert-red);
   stroke-width: 2;
+  animation: none;
 }
 
 @keyframes region-pulse {

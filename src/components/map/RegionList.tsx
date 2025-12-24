@@ -16,7 +16,7 @@ export default function RegionList({
   onRegionHover,
 }: RegionListProps) {
   return (
-    <div className="space-y-1 font-[family-name:var(--font-pipboy)] text-xs md:text-sm pl-2">
+    <div className="space-y-1 font-[family-name:var(--font-pipboy)] text-xs md:text-sm pl-2 overflow-hidden">
       {regions.map((region) => {
         const isAlert = alertedRegions.includes(region.id);
         const isHovered = hoveredRegion === region.id;
@@ -24,7 +24,7 @@ export default function RegionList({
         return (
           <div
             key={region.id}
-            className={`region-list-item cursor-pointer transition-all ${
+            className={`region-list-item cursor-pointer transition-transform ${
               isHovered ? "scale-105" : ""
             }`}
             onMouseEnter={() => onRegionHover(region.id)}
@@ -38,7 +38,9 @@ export default function RegionList({
             <span
               className={
                 isAlert
-                  ? "glow-text-red"
+                  ? isHovered
+                    ? "glow-text-red-bright"
+                    : "glow-text-red"
                   : isHovered
                   ? "glow-text-bright"
                   : "glow-text"

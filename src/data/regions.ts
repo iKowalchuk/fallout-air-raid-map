@@ -29,6 +29,8 @@ export const UKRAINE_REGIONS: Region[] = [
   { id: "vinnytsia", nameUa: "Вінницька", nameEn: "Vinnytsia", position: "right" },
   { id: "kharkiv", nameUa: "Харківська", nameEn: "Kharkiv", position: "right" },
   { id: "zhytomyr", nameUa: "Житомирська", nameEn: "Zhytomyr", position: "right" },
+  { id: "crimea", nameUa: "АР Крим", nameEn: "Crimea", position: "right" },
+  { id: "sevastopol", nameUa: "м. Севастополь", nameEn: "Sevastopol", position: "right" },
 ];
 
 export function getRegionById(id: string): Region | undefined {
