@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
-import { uidToProjectRegionId, getAllUids } from "@/data/regionMapping";
-import { getRegionById } from "@/data/regions";
+import {
+  uidToProjectRegionId,
+  oblastNameToProjectRegionId,
+  getAllUids,
+} from "@/data/regionMapping";
 import {
   AlertsInUaHistoryResponseSchema,
   type AlertsInUaAlert,
@@ -68,14 +71,21 @@ async function fetchRegionHistory(uid: number): Promise<AlertsInUaAlert[]> {
 
 // Transform API alert to message format
 function alertToMessages(alert: AlertsInUaAlert): AlertMessage[] {
-  const projectRegionId = uidToProjectRegionId(alert.location_uid);
+  // Determine project region ID (same logic as main alerts route)
+  let projectRegionId: string | null = null;
+
+  if (alert.location_type === "oblast") {
+    // For oblast-level records, use location_uid directly
+    projectRegionId = uidToProjectRegionId(alert.location_uid);
+  } else {
+    // For sub-oblast records (hromada, raion, city), use location_oblast name
+    projectRegionId = oblastNameToProjectRegionId(alert.location_oblast);
+  }
+
   if (!projectRegionId) return [];
 
-  const region = getRegionById(projectRegionId);
-  if (!region) {
-    console.warn(`Region not found for project ID: ${projectRegionId}`);
-  }
-  const regionName = region?.nameUa || alert.location_title;
+  // Use original location_title for display (not oblast name)
+  const regionName = alert.location_title;
 
   const messages: AlertMessage[] = [];
 
@@ -196,7 +206,7 @@ export async function GET() {
   allMessages.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
   const responseData: HistoryApiResponse = {
-    messages: allMessages.slice(0, 100).map((msg) => ({
+    messages: allMessages.slice(0, 500).map((msg) => ({
       ...msg,
       timestamp: msg.timestamp.toISOString(),
     })),
