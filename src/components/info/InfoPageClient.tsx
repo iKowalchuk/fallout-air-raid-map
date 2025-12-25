@@ -21,6 +21,7 @@ export default function InfoPageClient() {
     messages: historyMessages,
     isLoading: historyLoading,
     source: historySource,
+    cacheStatus,
   } = useAlertHistory();
   const isAlertActive = alertCount > 0;
 
@@ -93,7 +94,7 @@ export default function InfoPageClient() {
         {/* Alert status */}
         <AlertStatus isActive={isAlertActive} alertCount={alertCount} />
 
-        <MessageLog messages={messages} />
+        <MessageLog messages={messages} cacheStatus={cacheStatus} />
         <TimelineBar messages={messages} />
       </ErrorBoundary>
     </div>
