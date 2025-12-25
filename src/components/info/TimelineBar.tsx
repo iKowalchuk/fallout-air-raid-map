@@ -49,17 +49,17 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
   }, [messages]);
 
   return (
-    <div className="mt-4 border-t border-[var(--pipboy-green-dark)] pt-3">
+    <div className="mt-1 border-t border-[var(--pipboy-green-dark)] pt-1 sm:mt-4 sm:pt-3">
       {/* Timeline header */}
-      <div className="mb-2">
-        <span className="glow-text font-[family-name:var(--font-pipboy)] text-xs opacity-70">
+      <div className="mb-0.5 sm:mb-2">
+        <span className="glow-text font-[family-name:var(--font-pipboy)] text-[9px] opacity-70 sm:text-xs">
           ▸ TODAY&apos;S TIMELINE
         </span>
       </div>
 
       <div className="relative">
         {/* Timeline background */}
-        <div className="timeline-bar-enhanced relative h-6 overflow-hidden rounded">
+        <div className="timeline-bar-enhanced relative h-5 overflow-hidden rounded sm:h-7 md:h-6">
           {/* Grid lines */}
           {[...Array(24)].map((_, i) => (
             <div
@@ -120,7 +120,7 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
         </div>
 
         {/* Time labels */}
-        <div className="glow-text mt-1 flex justify-between font-[family-name:var(--font-pipboy)] text-[10px] md:text-xs">
+        <div className="glow-text mt-0.5 flex justify-between font-[family-name:var(--font-pipboy)] text-[8px] sm:mt-1 sm:text-[10px] md:text-xs">
           {hours.map((hour) => (
             <span key={hour} className="opacity-70">
               {hour}
@@ -130,10 +130,10 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
       </div>
 
       {/* Legend */}
-      <div className="mt-2 flex gap-4 font-[family-name:var(--font-pipboy)] text-[10px]">
-        <div className="flex items-center gap-1.5">
+      <div className="mt-1 flex gap-2 font-[family-name:var(--font-pipboy)] text-[8px] sm:mt-2 sm:gap-4 sm:text-[10px]">
+        <div className="flex items-center gap-1">
           <span
-            className="inline-block h-2 w-3 rounded-sm"
+            className="inline-block h-1.5 w-2 rounded-sm sm:h-2 sm:w-3"
             style={{
               backgroundColor: "var(--pipboy-green-dim)",
               boxShadow: "none",
@@ -143,9 +143,9 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
             Завершені
           </span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <span
-            className="inline-block h-2 w-3 rounded-sm"
+            className="inline-block h-1.5 w-2 rounded-sm sm:h-2 sm:w-3"
             style={{
               backgroundColor: "var(--pipboy-alert-red)",
               boxShadow: "0 0 4px var(--pipboy-alert-red)",
@@ -155,9 +155,9 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
             Активні
           </span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <span
-            className="inline-block h-2 w-px"
+            className="inline-block h-1.5 w-[2px] sm:h-2"
             style={{
               backgroundColor: "var(--pipboy-amber)",
               boxShadow: "0 0 4px var(--pipboy-amber)",

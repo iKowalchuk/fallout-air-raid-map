@@ -10,7 +10,7 @@ export default function AlertStatus({
   alertCount,
 }: AlertStatusProps) {
   return (
-    <div className="mb-4 flex items-center gap-3">
+    <div className="mb-1 flex items-center gap-3 sm:mb-4">
       <div className={`status-dot ${isActive ? "status-dot-alert" : ""}`} />
       <span
         className={`font-[family-name:var(--font-pipboy)] text-lg tracking-wide md:text-xl ${
@@ -21,7 +21,7 @@ export default function AlertStatus({
       </span>
       {isActive && (
         <span className="glow-text-red ml-2 text-sm">
-          ({alertCount} регіонів)
+          [{alertCount} регіонів]
         </span>
       )}
     </div>

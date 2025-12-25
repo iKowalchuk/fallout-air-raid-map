@@ -80,14 +80,15 @@ export default function UkraineMapSVG({
   alertedRegions,
   hoveredRegion,
   selectedRegion,
-  onRegionHover,
   onRegionClick,
 }: UkraineMapSVGProps) {
   const getRegionClass = (regionId: string) => {
     const isAlert = alertedRegions.includes(regionId);
     const isHovered = hoveredRegion === regionId;
+    const isSelected = selectedRegion === regionId;
 
-    if (isHovered) {
+    // Highlight region if hovered or selected
+    if (isHovered || isSelected) {
       return `region-path ${isAlert ? "region-path-alert-hover" : "region-path-safe-hover"}`;
     }
     return `region-path ${isAlert ? "region-path-alert" : "region-path-safe"}`;
@@ -131,13 +132,13 @@ export default function UkraineMapSVG({
             id={regionId}
             d={pathData}
             className={getRegionClass(regionId)}
-            onMouseEnter={() => onRegionHover?.(regionId)}
-            onMouseLeave={() => onRegionHover?.(null)}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              // On touch, just open modal (selectedRegion handles highlighting)
+              onRegionClick?.(regionId);
+            }}
             onClick={() => {
-              // Only call onRegionClick if not already selected (to avoid closing the info panel)
-              if (selectedRegion !== regionId) {
-                onRegionClick?.(regionId);
-              }
+              onRegionClick?.(regionId);
             }}
           >
             <title>{regionId}</title>
