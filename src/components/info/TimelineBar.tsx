@@ -75,7 +75,7 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
             .map((period, i) => (
               <div
                 key={`active-${i}`}
-                className={`absolute top-1 bottom-1 cursor-pointer rounded-sm transition-all duration-200 alert-period-active ${hoveredPeriod === period ? "scale-y-110 opacity-100" : "opacity-80"}`}
+                className={`alert-period-active absolute top-1 bottom-1 cursor-pointer rounded-sm transition-all duration-200 ${hoveredPeriod === period ? "scale-y-110 opacity-100" : "opacity-80"}`}
                 style={{
                   left: `${period.start}%`,
                   width: `${Math.max(period.end - period.start, 0.5)}%`,
@@ -93,7 +93,7 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
             .map((period, i) => (
               <div
                 key={`inactive-${i}`}
-                className={`absolute top-1 bottom-1 cursor-pointer rounded-sm transition-all duration-200 alert-period ${hoveredPeriod === period ? "scale-y-110 opacity-100" : "opacity-80"}`}
+                className={`alert-period absolute top-1 bottom-1 cursor-pointer rounded-sm transition-all duration-200 ${hoveredPeriod === period ? "scale-y-110 opacity-100" : "opacity-80"}`}
                 style={{
                   left: `${period.start}%`,
                   width: `${Math.max(period.end - period.start, 0.5)}%`,
@@ -163,9 +163,7 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
               boxShadow: "0 0 4px var(--pipboy-amber)",
             }}
           />
-          <span className="text-[var(--pipboy-amber)] opacity-50">
-            Зараз
-          </span>
+          <span className="text-[var(--pipboy-amber)] opacity-50">Зараз</span>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const RegionSchema = z.object({
+export const RegionSchema = z.object({
   id: z.string(),
   nameUa: z.string().min(1),
   nameEn: z.string().min(1),

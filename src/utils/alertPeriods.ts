@@ -82,8 +82,7 @@ function calculateAlertPeriods(messages: AlertMessage[]): AlertPeriod[] {
     } else {
       // For history messages, match by alert ID
       matchingEnd = alertEnds.find(
-        (end) =>
-          !usedEndIds.has(end.id) && getBaseAlertId(end.id) === baseId,
+        (end) => !usedEndIds.has(end.id) && getBaseAlertId(end.id) === baseId,
       );
     }
 

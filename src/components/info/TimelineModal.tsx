@@ -85,10 +85,9 @@ export default function TimelineModal({
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
-
       {/* Modal content */}
       <div
-        className="timeline-modal relative z-10 w-full max-w-2xl max-h-[60vh] overflow-hidden"
+        className="timeline-modal relative z-10 max-h-[60vh] w-full max-w-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal frame - Pip-Boy style */}
@@ -102,14 +101,14 @@ export default function TimelineModal({
             </div>
             <button
               onClick={onClose}
-              className="glow-text font-[family-name:var(--font-pipboy)] text-[10px] tracking-wider opacity-70 transition-all hover:opacity-100 hover:text-[var(--pipboy-alert-red)]"
+              className="glow-text font-[family-name:var(--font-pipboy)] text-[10px] tracking-wider opacity-70 transition-all hover:text-[var(--pipboy-alert-red)] hover:opacity-100"
             >
               [ESC]
             </button>
           </div>
 
           {/* Timeline content */}
-          <div className="overflow-y-auto max-h-[40vh] p-3">
+          <div className="max-h-[40vh] overflow-y-auto p-3">
             {periodsByRegion.length === 0 ? (
               <div className="flex items-center justify-center py-12">
                 <span className="glow-text font-[family-name:var(--font-pipboy)] text-sm opacity-50">
@@ -131,12 +130,12 @@ export default function TimelineModal({
                       }`}
                     >
                       {/* Region label */}
-                      <div className="flex items-center gap-1.5 min-w-[140px] max-w-[140px]">
+                      <div className="flex max-w-[140px] min-w-[140px] items-center gap-1.5">
                         {hasActive && (
                           <span className="status-dot-alert h-1.5 w-1.5 flex-shrink-0 rounded-full" />
                         )}
                         <span
-                          className={`font-[family-name:var(--font-pipboy)] text-[10px] truncate ${
+                          className={`truncate font-[family-name:var(--font-pipboy)] text-[10px] ${
                             hasActive
                               ? "glow-text-red text-[var(--pipboy-alert-red)]"
                               : "glow-text opacity-70"
@@ -148,7 +147,7 @@ export default function TimelineModal({
                       </div>
 
                       {/* Timeline bar */}
-                      <div className="timeline-bar-enhanced relative flex-1 h-5 rounded overflow-hidden">
+                      <div className="timeline-bar-enhanced relative h-5 flex-1 overflow-hidden rounded">
                         {/* Grid lines */}
                         {[...Array(24)].map((_, i) => (
                           <div
@@ -164,7 +163,7 @@ export default function TimelineModal({
                           .map((period, i) => (
                             <div
                               key={`active-${i}`}
-                              className="absolute top-1 bottom-1 rounded-sm transition-all alert-period-active"
+                              className="alert-period-active absolute top-1 bottom-1 rounded-sm transition-all"
                               style={{
                                 left: `${period.start}%`,
                                 width: `${Math.max(period.end - period.start, 0.5)}%`,
@@ -177,7 +176,7 @@ export default function TimelineModal({
                           .map((period, i) => (
                             <div
                               key={`inactive-${i}`}
-                              className="absolute top-1 bottom-1 rounded-sm transition-all alert-period"
+                              className="alert-period absolute top-1 bottom-1 rounded-sm transition-all"
                               style={{
                                 left: `${period.start}%`,
                                 width: `${Math.max(period.end - period.start, 0.5)}%`,
@@ -204,8 +203,8 @@ export default function TimelineModal({
           {/* Footer with time labels */}
           <div className="border-t border-[var(--pipboy-green-dark)] px-3 py-2">
             <div className="flex items-center gap-2">
-              <div className="min-w-[140px] max-w-[140px]" />
-              <div className="flex-1 flex justify-between">
+              <div className="max-w-[140px] min-w-[140px]" />
+              <div className="flex flex-1 justify-between">
                 {hours.map((hour) => (
                   <span
                     key={hour}
@@ -257,7 +256,7 @@ export default function TimelineModal({
         </div>
 
         {/* Scan line effect overlay */}
-        <div className="pointer-events-none absolute inset-0 rounded-lg overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg">
           <div className="modal-scanline" />
         </div>
       </div>
