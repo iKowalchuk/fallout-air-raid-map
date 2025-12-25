@@ -14,12 +14,21 @@ interface AlertMessage {
   message: string;
 }
 
+// Cache status for tracking region loading progress
+export interface CacheStatus {
+  cachedRegions: number;
+  pendingRegions: number;
+  totalRegions: number;
+  isComplete: boolean;
+}
+
 interface UseAlertHistoryResult {
   messages: AlertMessage[];
   isLoading: boolean;
   error: string | null;
   source: "api" | "cache" | null;
   lastUpdate: Date | null;
+  cacheStatus: CacheStatus | null;
   refetch: () => void;
 }
 
@@ -42,6 +51,7 @@ export function useAlertHistory(): UseAlertHistoryResult {
   const [error, setError] = useState<string | null>(null);
   const [source, setSource] = useState<"api" | "cache" | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [cacheStatus, setCacheStatus] = useState<CacheStatus | null>(null);
 
   const fetchHistory = useCallback(async () => {
     try {
@@ -75,6 +85,18 @@ export function useAlertHistory(): UseAlertHistoryResult {
       setLastUpdate(new Date(data.lastUpdate));
       setError(null);
       setIsLoading(false);
+
+      // Extract and set cache status
+      if (data.cacheStatus) {
+        const totalRegions =
+          data.cacheStatus.cachedRegions + data.cacheStatus.pendingRegions;
+        setCacheStatus({
+          cachedRegions: data.cacheStatus.cachedRegions,
+          pendingRegions: data.cacheStatus.pendingRegions,
+          totalRegions,
+          isComplete: data.cacheStatus.pendingRegions === 0,
+        });
+      }
     } catch (err) {
       console.error("Failed to fetch alert history:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch history");
@@ -103,6 +125,7 @@ export function useAlertHistory(): UseAlertHistoryResult {
     error,
     source,
     lastUpdate,
+    cacheStatus,
     refetch: fetchHistory,
   };
 }
