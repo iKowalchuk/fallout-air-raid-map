@@ -600,11 +600,25 @@ body {
 .alert-period {
   background: var(--pipboy-green-dim);
   box-shadow: inset 0 0 4px rgba(0, 170, 0, 0.5);
+  transition: box-shadow 0.2s ease;
+}
+
+.alert-period:hover {
+  box-shadow:
+    inset 0 0 4px rgba(0, 170, 0, 0.5),
+    0 0 4px var(--pipboy-green);
 }
 
 .alert-period-active {
   background: var(--pipboy-alert-red);
   box-shadow: inset 0 0 4px rgba(255, 51, 0, 0.5);
+  transition: box-shadow 0.2s ease;
+}
+
+.alert-period-active:hover {
+  box-shadow:
+    inset 0 0 4px rgba(255, 51, 0, 0.5),
+    0 0 4px var(--pipboy-alert-red);
 }
 
 .timeline-marker-enhanced {
