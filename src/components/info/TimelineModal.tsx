@@ -131,9 +131,11 @@ export default function TimelineModal({
                     >
                       {/* Region label */}
                       <div className="flex max-w-[140px] min-w-[140px] items-center gap-1.5">
-                        {hasActive && (
-                          <span className="status-dot-alert h-1.5 w-1.5 flex-shrink-0 rounded-full" />
-                        )}
+                        <span
+                          className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${
+                            hasActive ? "status-dot-alert" : "status-dot-clear"
+                          }`}
+                        />
                         <span
                           className={`truncate font-[family-name:var(--font-pipboy)] text-[10px] ${
                             hasActive

@@ -245,6 +245,11 @@ body {
   animation: pulse-red 0.8s ease-in-out infinite;
 }
 
+.status-dot-clear {
+  background: var(--pipboy-green-dim);
+  box-shadow: 0 0 2px var(--pipboy-green-dim);
+}
+
 /* ===== NAVIGATION TABS ===== */
 .nav-tab {
   color: var(--pipboy-green-dim);
