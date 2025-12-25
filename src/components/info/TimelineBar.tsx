@@ -7,6 +7,7 @@ import {
   type AlertMessage,
   type TimelinePeriod,
 } from "@/utils/alertPeriods";
+import TimelineModal from "./TimelineModal";
 
 interface TimelineBarProps {
   messages: AlertMessage[];
@@ -16,6 +17,10 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
   const [currentPosition, setCurrentPosition] = useState(0);
   const [hoveredPeriod, setHoveredPeriod] = useState<TimelinePeriod | null>(
     null,
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState<string | undefined>(
+    undefined,
   );
 
   // Generate time labels for the timeline (last 24 hours)
@@ -46,20 +51,10 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
   return (
     <div className="mt-4 border-t border-[var(--pipboy-green-dark)] pt-3">
       {/* Timeline header */}
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2">
         <span className="glow-text font-[family-name:var(--font-pipboy)] text-xs opacity-70">
           ▸ TODAY&apos;S TIMELINE
         </span>
-        {hoveredPeriod && (
-          <span
-            className={`font-[family-name:var(--font-pipboy)] text-xs ${
-              hoveredPeriod.isActive ? "glow-text-red-bright" : "glow-text"
-            }`}
-          >
-            {hoveredPeriod.regionName}{" "}
-            {hoveredPeriod.isActive ? "(ACTIVE)" : ""}
-          </span>
-        )}
       </div>
 
       <div className="relative">
@@ -74,21 +69,43 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
             />
           ))}
 
-          {/* Alert periods */}
-          {alertPeriods.map((period, i) => (
-            <div
-              key={i}
-              className={`absolute top-1 bottom-1 cursor-pointer rounded-sm transition-all duration-200 ${
-                period.isActive ? "alert-period-active" : "alert-period"
-              } ${hoveredPeriod === period ? "scale-y-110 opacity-100" : "opacity-80"}`}
-              style={{
-                left: `${period.start}%`,
-                width: `${Math.max(period.end - period.start, 0.5)}%`,
-              }}
-              onMouseEnter={() => setHoveredPeriod(period)}
-              onMouseLeave={() => setHoveredPeriod(null)}
-            />
-          ))}
+          {/* Alert periods - render active (red) first, then inactive (green) on top */}
+          {alertPeriods
+            .filter((p) => p.isActive)
+            .map((period, i) => (
+              <div
+                key={`active-${i}`}
+                className={`absolute top-1 bottom-1 cursor-pointer rounded-sm transition-all duration-200 alert-period-active ${hoveredPeriod === period ? "scale-y-110 opacity-100" : "opacity-80"}`}
+                style={{
+                  left: `${period.start}%`,
+                  width: `${Math.max(period.end - period.start, 0.5)}%`,
+                }}
+                onMouseEnter={() => setHoveredPeriod(period)}
+                onMouseLeave={() => setHoveredPeriod(null)}
+                onClick={() => {
+                  setSelectedRegion(period.regionName);
+                  setIsModalOpen(true);
+                }}
+              />
+            ))}
+          {alertPeriods
+            .filter((p) => !p.isActive)
+            .map((period, i) => (
+              <div
+                key={`inactive-${i}`}
+                className={`absolute top-1 bottom-1 cursor-pointer rounded-sm transition-all duration-200 alert-period ${hoveredPeriod === period ? "scale-y-110 opacity-100" : "opacity-80"}`}
+                style={{
+                  left: `${period.start}%`,
+                  width: `${Math.max(period.end - period.start, 0.5)}%`,
+                }}
+                onMouseEnter={() => setHoveredPeriod(period)}
+                onMouseLeave={() => setHoveredPeriod(null)}
+                onClick={() => {
+                  setSelectedRegion(period.regionName);
+                  setIsModalOpen(true);
+                }}
+              />
+            ))}
 
           {/* Current time marker */}
           <div
@@ -123,7 +140,7 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
             }}
           />
           <span className="text-[var(--pipboy-green)] opacity-50">
-            Завершені тривоги
+            Завершені
           </span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -138,7 +155,27 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
             Активні
           </span>
         </div>
+        <div className="flex items-center gap-1.5">
+          <span
+            className="inline-block h-2 w-px"
+            style={{
+              backgroundColor: "var(--pipboy-amber)",
+              boxShadow: "0 0 4px var(--pipboy-amber)",
+            }}
+          />
+          <span className="text-[var(--pipboy-amber)] opacity-50">
+            Зараз
+          </span>
+        </div>
       </div>
+
+      {/* Timeline Modal */}
+      <TimelineModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        messages={messages}
+        initialRegion={selectedRegion}
+      />
     </div>
   );
 }

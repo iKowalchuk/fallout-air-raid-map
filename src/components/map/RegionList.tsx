@@ -6,6 +6,7 @@ interface RegionListProps {
   regions: Region[];
   alertedRegions: string[];
   hoveredRegion: string | null;
+  selectedRegion: string | null;
   onRegionHover: (regionId: string | null) => void;
   onRegionClick?: (regionId: string) => void;
 }
@@ -14,6 +15,7 @@ export default function RegionList({
   regions,
   alertedRegions,
   hoveredRegion,
+  selectedRegion,
   onRegionHover,
   onRegionClick,
 }: RegionListProps) {
@@ -35,7 +37,12 @@ export default function RegionList({
             } ${isAlert ? "alert" : ""}`}
             onMouseEnter={() => onRegionHover(region.id)}
             onMouseLeave={() => onRegionHover(null)}
-            onClick={() => onRegionClick?.(region.id)}
+            onClick={() => {
+              // Only call onRegionClick if not already selected (to avoid closing the info panel)
+              if (selectedRegion !== region.id) {
+                onRegionClick?.(region.id);
+              }
+            }}
             style={{ animationDelay: `${index * 0.02}s` }}
             role="listitem"
             aria-label={`${region.nameUa}${isAlert ? ", повітряна тривога" : ", безпечно"}`}

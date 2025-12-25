@@ -70,8 +70,7 @@ export default function MessageLog({ messages }: MessageLogProps) {
   const [isAtTop, setIsAtTop] = useState(true);
   const prevMessagesLength = useRef(messages.length);
 
-  // Reverse messages so newest are at the top
-  const reversedMessages = [...messages].reverse();
+  // Messages are already sorted by API (newest first)
 
   // Auto-scroll to top when new messages arrive
   useEffect(() => {
@@ -151,7 +150,7 @@ export default function MessageLog({ messages }: MessageLogProps) {
         className="message-log-container flex-1 overflow-auto font-[family-name:var(--font-pipboy)]"
       >
         <div className="space-y-0.5">
-          {reversedMessages.map((msg, index) => {
+          {messages.map((msg, index) => {
             const threatLevel = getThreatLevel(msg.type);
             const icon = getMessageIcon(msg.type);
             const isNew = index < 3;
@@ -196,10 +195,10 @@ export default function MessageLog({ messages }: MessageLogProps) {
 
                 {/* Region name */}
                 <span
-                  className={`message-region ${
+                  className={`message-region font-medium ${
                     msg.type === "alert_start" ||
                     msg.type === "missile_detected"
-                      ? "glow-text-red"
+                      ? "glow-text-red-bright"
                       : msg.type === "alert_end"
                         ? "glow-text-bright"
                         : "glow-text"
@@ -209,7 +208,16 @@ export default function MessageLog({ messages }: MessageLogProps) {
                 </span>
 
                 {/* Message text */}
-                <span className="message-text glow-text opacity-80">
+                <span
+                  className={`message-text ${
+                    msg.type === "alert_start" ||
+                    msg.type === "missile_detected"
+                      ? "text-[var(--pipboy-alert-red)] opacity-90"
+                      : msg.type === "alert_end"
+                        ? "text-[var(--pipboy-green-bright)] opacity-90"
+                        : "glow-text opacity-70"
+                  }`}
+                >
                   {msg.message}
                 </span>
               </div>

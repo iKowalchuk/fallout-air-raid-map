@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { uidToProjectRegionId, OCCUPIED_REGIONS } from "@/data/regionMapping";
+import {
+  uidToProjectRegionId,
+  oblastNameToProjectRegionId,
+} from "@/data/regionMapping";
 import {
   AlertsInUaActiveResponseSchema,
   mapAlertType,
-  type AlertType,
   type AlertsApiResponse,
 } from "@/schemas";
 import { POLLING_CONFIG } from "@/config/polling";
@@ -62,39 +64,50 @@ export async function GET() {
 
     const apiData = parseResult.data;
 
-    // Filter only oblast-level alerts and transform to project format
-    const alerts = apiData.alerts
-      .filter((alert) => alert.location_type === "oblast")
-      .map((alert) => {
-        const projectRegionId = uidToProjectRegionId(alert.location_uid);
-        if (!projectRegionId) return null;
+    // Aggregate all active alerts to oblast level using oblast name
+    const oblastAlerts = new Map<
+      string,
+      { alertType: string; startTime: string | null }
+    >();
 
-        return {
-          regionId: projectRegionId,
-          isActive: alert.finished_at === null,
-          alertType: mapAlertType(alert.alert_type),
+    for (const alert of apiData.alerts) {
+      // Only active alerts (finished_at === null)
+      if (alert.finished_at !== null) continue;
+
+      // Determine project region ID
+      let projectRegionId: string | null = null;
+
+      if (alert.location_type === "oblast") {
+        // For oblast-level records, use location_uid directly
+        projectRegionId = uidToProjectRegionId(alert.location_uid);
+      } else {
+        // For sub-oblast records (hromada, raion, city), use location_oblast name
+        projectRegionId = oblastNameToProjectRegionId(alert.location_oblast);
+      }
+
+      if (!projectRegionId) continue;
+
+      // Store the first (oldest) alert for the oblast
+      if (!oblastAlerts.has(projectRegionId)) {
+        oblastAlerts.set(projectRegionId, {
+          alertType: alert.alert_type,
           startTime: alert.started_at || null,
-        };
-      })
-      .filter((alert): alert is NonNullable<typeof alert> => alert !== null);
+        });
+      }
+    }
 
-    // Get set of regions that already have alerts
-    const alertedRegionIds = new Set(alerts.map((a) => a.regionId));
-
-    // Add occupied territories that don't already have alerts from API
-    const occupiedAlerts = OCCUPIED_REGIONS.filter(
-      (regionId) => !alertedRegionIds.has(regionId),
-    ).map((regionId) => ({
-      regionId,
-      isActive: true,
-      alertType: "air_raid" as AlertType,
-      startTime: null,
-    }));
-
-    const allAlerts = [...alerts, ...occupiedAlerts];
+    // Convert Map to alerts array
+    const alerts = Array.from(oblastAlerts.entries()).map(
+      ([regionId, data]) => ({
+        regionId,
+        isActive: true,
+        alertType: mapAlertType(data.alertType),
+        startTime: data.startTime,
+      }),
+    );
 
     const responseData: AlertsApiResponse = {
-      alerts: allAlerts,
+      alerts,
       source: "api",
       lastUpdate: apiData.meta?.last_updated_at || new Date().toISOString(),
     };

@@ -63,6 +63,7 @@ export default function UkraineMap({ alertedRegions }: UkraineMapProps) {
             regions={leftRegions}
             alertedRegions={alertedRegions}
             hoveredRegion={hoveredRegion}
+            selectedRegion={selectedRegion}
             onRegionHover={setHoveredRegion}
             onRegionClick={handleRegionClick}
           />
@@ -76,6 +77,7 @@ export default function UkraineMap({ alertedRegions }: UkraineMapProps) {
           <UkraineMapSVG
             alertedRegions={alertedRegions}
             hoveredRegion={hoveredRegion}
+            selectedRegion={selectedRegion}
             onRegionHover={setHoveredRegion}
             onRegionClick={handleRegionClick}
           />
@@ -105,6 +107,7 @@ export default function UkraineMap({ alertedRegions }: UkraineMapProps) {
             regions={rightRegions}
             alertedRegions={alertedRegions}
             hoveredRegion={hoveredRegion}
+            selectedRegion={selectedRegion}
             onRegionHover={setHoveredRegion}
             onRegionClick={handleRegionClick}
           />
@@ -116,6 +119,7 @@ export default function UkraineMap({ alertedRegions }: UkraineMapProps) {
         regions={allRegions}
         alertedRegions={alertedRegions}
         hoveredRegion={hoveredRegion}
+        selectedRegion={selectedRegion}
         onRegionHover={setHoveredRegion}
         onRegionClick={handleRegionClick}
       />

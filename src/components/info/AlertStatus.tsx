@@ -21,7 +21,7 @@ export default function AlertStatus({
       </span>
       {isActive && (
         <span className="glow-text-red ml-2 text-sm">
-          ({alertCount} областей)
+          ({alertCount} регіонів)
         </span>
       )}
     </div>

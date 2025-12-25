@@ -1,6 +1,37 @@
 // Mapping between alerts.in.ua API region UIDs and project region IDs
 // API returns numeric UIDs, project uses string identifiers
 
+// Oblast name (Ukrainian) to project region ID mapping
+const OBLAST_NAME_TO_PROJECT_REGION: Record<string, string> = {
+  "Хмельницька область": "khmelnytskyi",
+  "Вінницька область": "vinnytsia",
+  "Рівненська область": "rivne",
+  "Волинська область": "volyn",
+  "Дніпропетровська область": "dnipro",
+  "Житомирська область": "zhytomyr",
+  "Закарпатська область": "zakarpattia",
+  "Запорізька область": "zaporizhzhia",
+  "Івано-Франківська область": "ivano-frankivsk",
+  "Київська область": "kyiv-oblast",
+  "Кіровоградська область": "kirovohrad",
+  "Луганська область": "luhansk",
+  "Миколаївська область": "mykolaiv",
+  "Одеська область": "odesa",
+  "Полтавська область": "poltava",
+  "Сумська область": "sumy",
+  "Тернопільська область": "ternopil",
+  "Харківська область": "kharkiv",
+  "Херсонська область": "kherson",
+  "Черкаська область": "cherkasy",
+  "Чернігівська область": "chernihiv",
+  "Чернівецька область": "chernivtsi",
+  "Львівська область": "lviv",
+  "Донецька область": "donetsk",
+  "Автономна Республіка Крим": "crimea",
+  "м. Севастополь": "sevastopol",
+  "м. Київ": "kyiv-city",
+};
+
 // alerts.in.ua UID to project region ID mapping
 const UID_TO_PROJECT_REGION: Record<number, string> = {
   3: "khmelnytskyi", // Khmelnytskyi Oblast
@@ -32,14 +63,6 @@ const UID_TO_PROJECT_REGION: Record<number, string> = {
   31: "kyiv-city", // Kyiv City
 };
 
-// Occupied territories - always show as alert
-export const OCCUPIED_REGIONS: string[] = [
-  "crimea",
-  "sevastopol",
-  "luhansk",
-  "donetsk",
-];
-
 // Convert API UID to project ID
 export function uidToProjectRegionId(uid: number | string): string | null {
   const numericUid = typeof uid === "string" ? parseInt(uid, 10) : uid;
@@ -49,4 +72,12 @@ export function uidToProjectRegionId(uid: number | string): string | null {
 // Get all API UIDs
 export function getAllUids(): number[] {
   return Object.keys(UID_TO_PROJECT_REGION).map(Number);
+}
+
+// Convert oblast name to project ID
+export function oblastNameToProjectRegionId(
+  oblastName: string | undefined,
+): string | null {
+  if (!oblastName) return null;
+  return OBLAST_NAME_TO_PROJECT_REGION[oblastName] ?? null;
 }

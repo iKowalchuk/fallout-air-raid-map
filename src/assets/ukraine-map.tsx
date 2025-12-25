@@ -3,6 +3,7 @@
 interface UkraineMapSVGProps {
   alertedRegions: string[];
   hoveredRegion?: string | null;
+  selectedRegion?: string | null;
   onRegionHover?: (regionId: string | null) => void;
   onRegionClick?: (regionId: string) => void;
 }
@@ -78,6 +79,7 @@ const REGION_PATHS: Record<string, string> = {
 export default function UkraineMapSVG({
   alertedRegions,
   hoveredRegion,
+  selectedRegion,
   onRegionHover,
   onRegionClick,
 }: UkraineMapSVGProps) {
@@ -131,7 +133,12 @@ export default function UkraineMapSVG({
             className={getRegionClass(regionId)}
             onMouseEnter={() => onRegionHover?.(regionId)}
             onMouseLeave={() => onRegionHover?.(null)}
-            onClick={() => onRegionClick?.(regionId)}
+            onClick={() => {
+              // Only call onRegionClick if not already selected (to avoid closing the info panel)
+              if (selectedRegion !== regionId) {
+                onRegionClick?.(regionId);
+              }
+            }}
           >
             <title>{regionId}</title>
           </path>

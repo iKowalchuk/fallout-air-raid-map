@@ -7,6 +7,7 @@ interface MobileRegionDrawerProps {
   regions: Region[];
   alertedRegions: string[];
   hoveredRegion: string | null;
+  selectedRegion: string | null;
   onRegionHover: (regionId: string | null) => void;
   onRegionClick: (regionId: string) => void;
 }
@@ -15,6 +16,7 @@ export default function MobileRegionDrawer({
   regions,
   alertedRegions,
   hoveredRegion,
+  selectedRegion,
   onRegionHover,
   onRegionClick,
 }: MobileRegionDrawerProps) {
@@ -86,7 +88,13 @@ export default function MobileRegionDrawer({
                   className={`mobile-region-item ${isAlert ? "alert" : ""} ${isHovered ? "hovered" : ""}`}
                   onTouchStart={() => onRegionHover(region.id)}
                   onTouchEnd={() => onRegionHover(null)}
-                  onClick={() => onRegionClick(region.id)}
+                  onClick={() => {
+                    // Only call onRegionClick if not already selected (to avoid closing the info panel)
+                    if (selectedRegion !== region.id) {
+                      onRegionClick(region.id);
+                    }
+                    setIsExpanded(false);
+                  }}
                   aria-label={`${region.nameUa}${isAlert ? ", повітряна тривога" : ", безпечно"}`}
                   aria-pressed={isHovered}
                 >
