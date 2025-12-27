@@ -80,14 +80,15 @@ export default function UkraineMapSVG({
   alertedRegions,
   hoveredRegion,
   selectedRegion,
-  onRegionHover,
   onRegionClick,
 }: UkraineMapSVGProps) {
   const getRegionClass = (regionId: string) => {
     const isAlert = alertedRegions.includes(regionId);
     const isHovered = hoveredRegion === regionId;
+    const isSelected = selectedRegion === regionId;
 
-    if (isHovered) {
+    // Highlight region if hovered or selected
+    if (isHovered || isSelected) {
       return `region-path ${isAlert ? "region-path-alert-hover" : "region-path-safe-hover"}`;
     }
     return `region-path ${isAlert ? "region-path-alert" : "region-path-safe"}`;
@@ -99,8 +100,9 @@ export default function UkraineMapSVG({
       className="h-full max-h-[450px] w-full"
       style={{ filter: "drop-shadow(0 0 10px rgba(0, 255, 0, 0.25))" }}
       role="img"
-      aria-label="Ukraine regions map"
+      aria-label="Карта України з регіонами"
     >
+      <title>Карта України з регіонами</title>
       {/* Glow filter */}
       <defs>
         <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
@@ -128,28 +130,27 @@ export default function UkraineMapSVG({
       {/* Render all regions */}
       <g filter="url(#glow)">
         {Object.entries(REGION_PATHS).map(([regionId, pathData]) => (
-          // biome-ignore lint/a11y/useSemanticElements: SVG path elements cannot be replaced with button elements
+          // biome-ignore lint/a11y/useSemanticElements: SVG path elements cannot be replaced with semantic HTML elements
           <path
             key={regionId}
             id={regionId}
             d={pathData}
             className={getRegionClass(regionId)}
             role="button"
+            aria-label={regionId}
             tabIndex={0}
-            onMouseEnter={() => onRegionHover?.(regionId)}
-            onMouseLeave={() => onRegionHover?.(null)}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              // On touch, just open modal (selectedRegion handles highlighting)
+              onRegionClick?.(regionId);
+            }}
             onClick={() => {
-              // Only call onRegionClick if not already selected (to avoid closing the info panel)
-              if (selectedRegion !== regionId) {
-                onRegionClick?.(regionId);
-              }
+              onRegionClick?.(regionId);
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                if (selectedRegion !== regionId) {
-                  onRegionClick?.(regionId);
-                }
+                onRegionClick?.(regionId);
               }
             }}
           >

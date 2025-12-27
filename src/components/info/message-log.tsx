@@ -156,20 +156,19 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
       )}
 
       {/* Header with inline compact legend */}
-      <div className="mt-3 mb-2">
-        <div className="flex items-center justify-between">
-          <span className="glow-text font-[family-name:var(--font-pipboy)] text-xs opacity-70">
-            ▸ MESSAGE LOG
-          </span>
-          <div className="flex items-center gap-5">
+      <div className="mt-1 mb-1 sm:mt-3 sm:mb-2">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center sm:justify-start">
+            <span className="glow-text font-[family-name:var(--font-pipboy)] text-[9px] opacity-70 sm:text-xs">
+              ▸ MESSAGE LOG
+            </span>
+          </div>
+          <div className="flex w-full items-center justify-between gap-1.5 sm:w-auto sm:gap-5">
             {/* Compact inline legend - matching TimelineBar style */}
-            <div className="flex items-center gap-4 font-[family-name:var(--font-pipboy)] text-[10px]">
-              <div
-                className="flex items-center gap-1.5"
-                title="Ракетна загроза"
-              >
+            <div className="flex flex-wrap items-center gap-1.5 font-[family-name:var(--font-pipboy)] text-[8px] sm:gap-4 sm:text-[10px]">
+              <div className="flex items-center gap-1" title="Ракетна загроза">
                 <span
-                  className="inline-block h-3 w-2 rounded-sm"
+                  className="inline-block h-2.5 w-[3px] rounded-sm sm:h-3"
                   style={{
                     backgroundColor: "var(--pipboy-alert-red)",
                     boxShadow: "0 0 4px var(--pipboy-alert-red)",
@@ -179,9 +178,9 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
                   Ракети
                 </span>
               </div>
-              <div className="flex items-center gap-1.5" title="Тривога / БПЛА">
+              <div className="flex items-center gap-1" title="Тривога / БПЛА">
                 <span
-                  className="inline-block h-3 w-2 rounded-sm"
+                  className="inline-block h-2.5 w-[3px] rounded-sm sm:h-3"
                   style={{
                     backgroundColor: "var(--pipboy-amber)",
                     boxShadow: "0 0 4px var(--pipboy-amber)",
@@ -191,9 +190,9 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
                   Тривога
                 </span>
               </div>
-              <div className="flex items-center gap-1.5" title="Відбій тривоги">
+              <div className="flex items-center gap-1" title="Відбій тривоги">
                 <span
-                  className="inline-block h-3 w-2 rounded-sm"
+                  className="inline-block h-2.5 w-[3px] rounded-sm sm:h-3"
                   style={{
                     backgroundColor: "var(--pipboy-green-dim)",
                     boxShadow: "none",
@@ -204,11 +203,11 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
                 </span>
               </div>
               <div
-                className="flex items-center gap-1.5"
+                className="flex items-center gap-1"
                 title="Системне повідомлення"
               >
                 <span
-                  className="inline-block h-3 w-2 rounded-sm"
+                  className="inline-block h-2.5 w-[3px] rounded-sm sm:h-3"
                   style={{
                     backgroundColor: "var(--pipboy-cyan)",
                     boxShadow: "0 0 4px var(--pipboy-cyan)",
@@ -257,9 +256,9 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
                     title={getThreatLabel(threatLevel)}
                   />
 
-                  {/* Icon */}
+                  {/* Icon - hidden on very small screens */}
                   <span
-                    className={`message-icon ${
+                    className={`message-icon xs:inline hidden sm:inline ${
                       threatLevel === "high" || threatLevel === "medium"
                         ? "glow-text-red"
                         : threatLevel === "clear"
@@ -271,13 +270,13 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
                   </span>
 
                   {/* Timestamp */}
-                  <span className="message-log-timestamp opacity-60">
+                  <span className="message-log-timestamp text-[10px] opacity-60 sm:text-xs">
                     {formatTimestamp(msg.timestamp)}
                   </span>
 
                   {/* Region name */}
                   <span
-                    className={`message-region font-medium ${
+                    className={`message-region truncate text-[10px] font-medium sm:text-xs sm:whitespace-nowrap ${
                       msg.type === "alert_start" ||
                       msg.type === "missile_detected"
                         ? "glow-text-red-bright"
@@ -291,7 +290,7 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
 
                   {/* Message text */}
                   <span
-                    className={`message-text ${
+                    className={`message-text min-w-0 flex-1 truncate text-[10px] sm:text-xs ${
                       msg.type === "alert_start" ||
                       msg.type === "missile_detected"
                         ? "text-[var(--pipboy-alert-red)] opacity-90"

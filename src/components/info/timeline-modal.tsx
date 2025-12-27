@@ -96,7 +96,7 @@ export default function TimelineModal({
     >
       {/* Modal content */}
       <div
-        className="timeline-modal relative z-10 max-h-[60vh] w-full max-w-2xl overflow-hidden"
+        className="timeline-modal relative z-10 max-h-[85vh] w-full max-w-2xl overflow-hidden sm:max-h-[70vh] md:max-h-[60vh]"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
         role="dialog"
@@ -121,7 +121,7 @@ export default function TimelineModal({
           </div>
 
           {/* Timeline content */}
-          <div className="max-h-[40vh] overflow-y-auto p-3">
+          <div className="max-h-[60vh] overflow-y-auto p-2 sm:max-h-[50vh] sm:p-3 md:max-h-[40vh]">
             {periodsByRegion.length === 0 ? (
               <div className="flex items-center justify-center py-12">
                 <span className="glow-text font-[family-name:var(--font-pipboy)] text-sm opacity-50">
@@ -143,14 +143,14 @@ export default function TimelineModal({
                       }`}
                     >
                       {/* Region label */}
-                      <div className="flex max-w-[140px] min-w-[140px] items-center gap-1.5">
+                      <div className="flex max-w-[90px] min-w-[90px] items-center gap-1 sm:max-w-[120px] sm:min-w-[120px] sm:gap-1.5 md:max-w-[140px] md:min-w-[140px]">
                         <span
                           className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${
                             hasActive ? "status-dot-alert" : "status-dot-clear"
                           }`}
                         />
                         <span
-                          className={`truncate font-[family-name:var(--font-pipboy)] text-[10px] ${
+                          className={`truncate font-[family-name:var(--font-pipboy)] text-[9px] sm:text-[10px] ${
                             hasActive
                               ? "glow-text-red text-[var(--pipboy-alert-red)]"
                               : "glow-text opacity-70"
@@ -219,14 +219,14 @@ export default function TimelineModal({
           </div>
 
           {/* Footer with time labels */}
-          <div className="border-t border-[var(--pipboy-green-dark)] px-3 py-2">
-            <div className="flex items-center gap-2">
-              <div className="max-w-[140px] min-w-[140px]" />
+          <div className="border-t border-[var(--pipboy-green-dark)] px-2 py-1.5 sm:px-3 sm:py-2">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="max-w-[90px] min-w-[90px] sm:max-w-[120px] sm:min-w-[120px] md:max-w-[140px] md:min-w-[140px]" />
               <div className="flex flex-1 justify-between">
                 {hours.map((hour) => (
                   <span
                     key={hour}
-                    className="glow-text font-[family-name:var(--font-pipboy)] text-[10px] opacity-50"
+                    className="glow-text font-[family-name:var(--font-pipboy)] text-[8px] opacity-50 sm:text-[10px]"
                   >
                     {hour}
                   </span>
@@ -235,37 +235,37 @@ export default function TimelineModal({
             </div>
 
             {/* Legend */}
-            <div className="mt-2 flex items-center justify-center gap-4">
-              <div className="flex items-center gap-1.5">
+            <div className="mt-1.5 flex items-center justify-center gap-2 sm:mt-2 sm:gap-4">
+              <div className="flex items-center gap-1">
                 <span
-                  className="inline-block h-2 w-3 rounded-sm"
+                  className="inline-block h-1.5 w-2 rounded-sm sm:h-2 sm:w-3"
                   style={{ backgroundColor: "var(--pipboy-green-dim)" }}
                 />
-                <span className="font-[family-name:var(--font-pipboy)] text-[10px] text-[var(--pipboy-green)] opacity-50">
+                <span className="font-[family-name:var(--font-pipboy)] text-[8px] text-[var(--pipboy-green)] opacity-50 sm:text-[10px]">
                   Завершені
                 </span>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 <span
-                  className="inline-block h-2 w-3 rounded-sm"
+                  className="inline-block h-1.5 w-2 rounded-sm sm:h-2 sm:w-3"
                   style={{
                     backgroundColor: "var(--pipboy-alert-red)",
                     boxShadow: "0 0 4px var(--pipboy-alert-red)",
                   }}
                 />
-                <span className="font-[family-name:var(--font-pipboy)] text-[10px] text-[var(--pipboy-alert-red)] opacity-70">
+                <span className="font-[family-name:var(--font-pipboy)] text-[8px] text-[var(--pipboy-alert-red)] opacity-70 sm:text-[10px]">
                   Активні
                 </span>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 <span
-                  className="inline-block h-2 w-px"
+                  className="inline-block h-1.5 w-[2px] sm:h-2"
                   style={{
                     backgroundColor: "var(--pipboy-amber)",
                     boxShadow: "0 0 4px var(--pipboy-amber)",
                   }}
                 />
-                <span className="font-[family-name:var(--font-pipboy)] text-[10px] text-[var(--pipboy-amber)] opacity-50">
+                <span className="font-[family-name:var(--font-pipboy)] text-[8px] text-[var(--pipboy-amber)] opacity-50 sm:text-[10px]">
                   Зараз
                 </span>
               </div>

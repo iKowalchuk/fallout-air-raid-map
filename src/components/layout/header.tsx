@@ -44,36 +44,19 @@ export default function Header({ activeTab, alertCount = 0 }: HeaderProps) {
   const warDay = isHydrated ? getWarDay() : 0;
 
   return (
-    <header className="border-b border-[var(--pipboy-green-dark)] px-4 py-3 md:px-6">
-      {/* Top row: Logo and Navigation */}
-      <div className="mb-2 flex items-center justify-between">
-        <h1 className="glow-text-bright font-[family-name:var(--font-pipboy)] text-xl tracking-wider md:text-2xl">
+    <header className="flex items-center justify-between border-b border-[var(--pipboy-green-dark)] px-2 py-1 sm:px-4 sm:py-3 md:px-6">
+      {/* Left side: Logo and Info */}
+      <div className="flex flex-col gap-0.5 sm:gap-1">
+        <h1 className="glow-text-bright font-[family-name:var(--font-pipboy)] text-sm tracking-wider sm:text-xl md:text-2xl">
           VAULT-TEC UA
         </h1>
 
-        <nav className="flex gap-4 font-[family-name:var(--font-pipboy)] text-base md:gap-6 md:text-lg">
-          <Link
-            href="/info"
-            className={`nav-tab ${activeTab === "info" ? "nav-tab-active" : ""}`}
-          >
-            INFO
-          </Link>
-          <Link
-            href="/map"
-            className={`nav-tab ${activeTab === "map" ? "nav-tab-active" : ""}`}
-          >
-            MAP
-          </Link>
-        </nav>
-      </div>
-
-      {/* Bottom row: Clock, Date, War Day, Alert Counter */}
-      <div className="flex items-center justify-between font-[family-name:var(--font-pipboy)] text-xs md:text-sm">
-        <div className="flex items-center gap-4 md:gap-6">
+        {/* Info row: Clock, Date, War Day */}
+        <div className="flex items-center gap-2 font-[family-name:var(--font-pipboy)] text-[9px] sm:gap-4 sm:text-xs md:gap-6 md:text-sm">
           {/* Live Clock */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <span className="glow-text opacity-70">TIME:</span>
-            <span className="glow-text-bright min-w-[70px] font-mono tracking-widest">
+            <span className="glow-text-bright min-w-[55px] font-mono tracking-widest sm:min-w-[70px]">
               {time ? formatTime(time) : "--:--:--"}
             </span>
           </div>
@@ -93,18 +76,34 @@ export default function Header({ activeTab, alertCount = 0 }: HeaderProps) {
               {warDay || "---"}
             </span>
           </div>
-        </div>
 
-        {/* Alert Counter */}
-        {alertCount > 0 && (
-          <div className="alert-counter flex items-center gap-2">
-            <div className="alert-indicator" />
-            <span className="glow-text-red-bright">
-              {alertCount} {alertCount === 1 ? "REGION" : "REGIONS"} UNDER ALERT
-            </span>
-          </div>
-        )}
+          {/* Alert Counter */}
+          {alertCount > 0 && (
+            <div className="alert-counter hidden items-center gap-2 sm:flex">
+              <div className="alert-indicator" />
+              <span className="glow-text-red-bright">
+                {alertCount} {alertCount === 1 ? "REGION" : "REGIONS"}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Right side: Navigation - vertically centered */}
+      <nav className="flex items-center gap-2 font-[family-name:var(--font-pipboy)] text-xs sm:gap-4 sm:text-base md:gap-6 md:text-lg">
+        <Link
+          href="/info"
+          className={`nav-tab ${activeTab === "info" ? "nav-tab-active" : ""}`}
+        >
+          INFO
+        </Link>
+        <Link
+          href="/map"
+          className={`nav-tab ${activeTab === "map" ? "nav-tab-active" : ""}`}
+        >
+          MAP
+        </Link>
+      </nav>
     </header>
   );
 }
