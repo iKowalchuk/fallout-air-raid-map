@@ -2,81 +2,191 @@
 
 import { useEffect, useState } from "react";
 
-/**
- * Unified Fallout-style loader - minimal industrial terminal aesthetic
- * Used for both Info and Map pages with different status text
- */
-function FalloutLoader({ statusText }: { statusText: string }) {
-  const [dots, setDots] = useState("");
+/** Loading stage with technical detail */
+interface LoadingMessage {
+  stage: string;
+  detail: string;
+}
 
+/** Loading messages for INFO page */
+const infoLoadingMessages: LoadingMessage[] = [
+  { stage: "ІНІЦІАЛІЗАЦІЯ", detail: "Завантаження ядра системи..." },
+  { stage: "ПІДКЛЮЧЕННЯ", detail: "Встановлення з'єднання з сервером..." },
+  { stage: "СИНХРОНІЗАЦІЯ", detail: "Отримання даних тривог..." },
+  { stage: "ОБРОБКА", detail: "Аналіз регіональних даних..." },
+  { stage: "ГОТОВО", detail: "Система готова до роботи" },
+];
+
+/** Loading messages for MAP page */
+const mapLoadingMessages: LoadingMessage[] = [
+  { stage: "ІНІЦІАЛІЗАЦІЯ", detail: "Активація картографічного модуля..." },
+  { stage: "СКАНУВАННЯ", detail: "Завантаження топографічних даних..." },
+  { stage: "КАЛІБРУВАННЯ", detail: "Синхронізація радарних систем..." },
+  { stage: "АНАЛІЗ", detail: "Обробка сигналів тривоги..." },
+  { stage: "ГОТОВО", detail: "Територія під контролем" },
+];
+
+/**
+ * Unified Fallout-style loader - radar-based terminal aesthetic
+ * Features animated radar, percentage progress, and dynamic status messages
+ */
+function FalloutLoader({ messages }: { messages: LoadingMessage[] }) {
+  const [progress, setProgress] = useState(0);
+  const [messageIndex, setMessageIndex] = useState(0);
+
+  // Generate tick marks at 30-degree intervals
+  const tickMarks = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(
+    (angle) => {
+      const rad = (angle * Math.PI) / 180;
+      const x1 = 50 + 42 * Math.cos(rad);
+      const y1 = 50 + 42 * Math.sin(rad);
+      const x2 = 50 + 45 * Math.cos(rad);
+      const y2 = 50 + 45 * Math.sin(rad);
+      return { angle, x1, y1, x2, y2 };
+    },
+  );
+
+  // Fake progress from 0 to 100 with variable speed
   useEffect(() => {
-    const interval = setInterval(() => {
-      setDots((prev) => (prev.length >= 3 ? "" : `${prev}.`));
-    }, 400);
-    return () => clearInterval(interval);
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) return 100;
+        // Variable increment for realistic feel
+        const increment = Math.random() * 2.5 + 0.5;
+        return Math.min(prev + increment, 100);
+      });
+    }, 80);
+
+    return () => clearInterval(progressInterval);
   }, []);
 
+  // Update message based on progress thresholds
+  useEffect(() => {
+    const thresholds = [0, 20, 45, 70, 95];
+    let index = 0;
+    for (let i = thresholds.length - 1; i >= 0; i--) {
+      if (progress >= thresholds[i]) {
+        index = i;
+        break;
+      }
+    }
+    setMessageIndex(Math.min(index, messages.length - 1));
+  }, [progress, messages.length]);
+
+  const currentMessage = messages[messageIndex];
+
   return (
-    <output className="fallout-loader" aria-label={statusText}>
+    <output
+      className="fallout-loader"
+      aria-label={`${currentMessage.stage}: ${currentMessage.detail}`}
+    >
       {/* Scanlines overlay */}
       <div className="fallout-scanlines" aria-hidden="true" />
 
       {/* Content */}
       <div className="fallout-loader-content">
-        {/* Radiation symbol */}
-        <div className="fallout-radiation-container">
+        {/* Radar container */}
+        <div className="fallout-radar-container">
+          {/* Main radar SVG */}
           <svg
             viewBox="0 0 100 100"
-            className="fallout-radiation-symbol"
+            className="fallout-radar"
             aria-hidden="true"
           >
-            {/* Outer ring */}
+            {/* SVG Definitions for gradient */}
+            <defs>
+              <linearGradient
+                id="radar-sweep-gradient"
+                gradientTransform="rotate(60)"
+              >
+                <stop offset="0%" stopColor="#00ff00" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#00ff00" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+
+            {/* Concentric circles (4 rings) */}
             <circle
               cx="50"
               cy="50"
               r="45"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              opacity="0.3"
+              className="fallout-radar-ring fallout-radar-ring-outer"
             />
-            <circle
-              cx="50"
-              cy="50"
-              r="38"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1"
-              opacity="0.2"
-            />
-
-            {/* Inner circle */}
+            <circle cx="50" cy="50" r="34" className="fallout-radar-ring" />
+            <circle cx="50" cy="50" r="23" className="fallout-radar-ring" />
             <circle
               cx="50"
               cy="50"
               r="12"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-              className="fallout-inner-circle"
+              className="fallout-radar-ring fallout-radar-ring-inner"
             />
 
-            {/* Radiation blades */}
-            <path
-              d="M50 8 A42 42 0 0 1 86.36 29 L50 50 Z"
-              fill="currentColor"
-              className="fallout-blade"
+            {/* Grid crosshairs */}
+            <line
+              x1="50"
+              y1="5"
+              x2="50"
+              y2="95"
+              className="fallout-radar-crosshair"
             />
-            <path
-              d="M86.36 71 A42 42 0 0 1 13.64 71 L50 50 Z"
-              fill="currentColor"
-              className="fallout-blade"
+            <line
+              x1="5"
+              y1="50"
+              x2="95"
+              y2="50"
+              className="fallout-radar-crosshair"
             />
-            <path
-              d="M13.64 29 A42 42 0 0 1 50 8 L50 50 Z"
-              fill="currentColor"
-              className="fallout-blade"
+
+            {/* Diagonal crosshairs */}
+            <line
+              x1="14.6"
+              y1="14.6"
+              x2="85.4"
+              y2="85.4"
+              className="fallout-radar-crosshair-diagonal"
             />
+            <line
+              x1="85.4"
+              y1="14.6"
+              x2="14.6"
+              y2="85.4"
+              className="fallout-radar-crosshair-diagonal"
+            />
+
+            {/* Tick marks on outer ring */}
+            <g className="fallout-radar-ticks">
+              {tickMarks.map((tick) => (
+                <line
+                  key={tick.angle}
+                  x1={tick.x1}
+                  y1={tick.y1}
+                  x2={tick.x2}
+                  y2={tick.y2}
+                  className="fallout-radar-tick"
+                />
+              ))}
+            </g>
+
+            {/* Animated scan group - sweep and line rotate together */}
+            <g className="fallout-radar-scan-group">
+              {/* Sweep gradient (triangular path trailing the scan line) */}
+              <path
+                d="M50 50 L50 5 A45 45 0 0 1 89.5 32.5 Z"
+                fill="url(#radar-sweep-gradient)"
+                className="fallout-radar-sweep"
+              />
+
+              {/* Rotating scan line */}
+              <line
+                x1="50"
+                y1="50"
+                x2="50"
+                y2="5"
+                className="fallout-radar-scan-line"
+              />
+            </g>
+
+            {/* Center dot */}
+            <circle cx="50" cy="50" r="3" fill="currentColor" opacity="0.6" />
           </svg>
 
           {/* Pulse rings */}
@@ -90,20 +200,27 @@ function FalloutLoader({ statusText }: { statusText: string }) {
           />
         </div>
 
-        {/* Status text */}
-        <div className="fallout-status">
-          <span className="fallout-status-text">{statusText}</span>
-          <span className="fallout-dots" aria-hidden="true">
-            {dots}
+        {/* Progress percentage display */}
+        <div className="fallout-progress-display" aria-hidden="true">
+          <span className="fallout-progress-percent">
+            {Math.floor(progress)}%
           </span>
         </div>
 
-        {/* Progress bar */}
+        {/* Status text with stage and detail */}
+        <div className="fallout-status">
+          <div className="fallout-status-stage">{currentMessage.stage}</div>
+          <div className="fallout-status-detail">{currentMessage.detail}</div>
+        </div>
+
+        {/* Progress bar with percentage fill */}
         <div className="fallout-progress" aria-hidden="true">
           <div className="fallout-progress-track">
-            <div className="fallout-progress-fill" />
+            <div
+              className="fallout-progress-fill"
+              style={{ width: `${progress}%` }}
+            />
           </div>
-          <div className="fallout-progress-glow" />
         </div>
 
         {/* Bottom label */}
@@ -130,12 +247,12 @@ function FalloutLoader({ statusText }: { statusText: string }) {
  * Info page loader
  */
 export function InfoPageLoader() {
-  return <FalloutLoader statusText="ЗАВАНТАЖЕННЯ ДАНИХ" />;
+  return <FalloutLoader messages={infoLoadingMessages} />;
 }
 
 /**
  * Map page loader
  */
 export function MapPageLoader() {
-  return <FalloutLoader statusText="СКАНУВАННЯ ТЕРИТОРІЇ" />;
+  return <FalloutLoader messages={mapLoadingMessages} />;
 }

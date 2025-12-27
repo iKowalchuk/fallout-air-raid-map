@@ -1755,14 +1755,15 @@ body {
   padding: 24px;
 }
 
-/* Radiation symbol container */
-.fallout-radiation-container {
+/* Radar container */
+.fallout-radar-container {
   position: relative;
   width: 100px;
   height: 100px;
 }
 
-.fallout-radiation-symbol {
+/* Main radar SVG */
+.fallout-radar {
   width: 100%;
   height: 100%;
   color: var(--pipboy-green);
@@ -1770,12 +1771,62 @@ body {
   animation: fallout-glow 2.5s ease-in-out infinite;
 }
 
-.fallout-inner-circle {
-  animation: fallout-inner-pulse 1.5s ease-in-out infinite;
+/* Concentric rings */
+.fallout-radar-ring {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  opacity: 0.3;
 }
 
-.fallout-blade {
-  opacity: 0.85;
+.fallout-radar-ring-outer {
+  stroke-width: 2;
+  opacity: 0.4;
+}
+
+.fallout-radar-ring-inner {
+  stroke-width: 2;
+  opacity: 0.8;
+  animation: fallout-radar-inner-pulse 1.5s ease-in-out infinite;
+}
+
+/* Crosshairs */
+.fallout-radar-crosshair {
+  stroke: currentColor;
+  stroke-width: 1;
+  opacity: 0.25;
+}
+
+.fallout-radar-crosshair-diagonal {
+  stroke: currentColor;
+  stroke-width: 0.5;
+  opacity: 0.15;
+}
+
+/* Tick marks */
+.fallout-radar-tick {
+  stroke: currentColor;
+  stroke-width: 1.5;
+  opacity: 0.5;
+}
+
+/* Rotating scan line */
+.fallout-radar-scan-line {
+  stroke: var(--pipboy-green-bright);
+  stroke-width: 2;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px var(--pipboy-green-bright));
+}
+
+/* Sweep gradient behind scan line */
+.fallout-radar-sweep {
+  opacity: 0.5;
+}
+
+/* Animated group for scan line and sweep */
+.fallout-radar-scan-group {
+  transform-origin: 50px 50px;
+  animation: fallout-radar-scan 3s linear infinite;
 }
 
 @keyframes fallout-glow {
@@ -1789,15 +1840,24 @@ body {
   }
 }
 
-@keyframes fallout-inner-pulse {
+@keyframes fallout-radar-scan {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fallout-radar-inner-pulse {
   0%,
   100% {
-    stroke-width: 3;
-    opacity: 1;
+    stroke-width: 2;
+    opacity: 0.8;
   }
   50% {
-    stroke-width: 4;
-    opacity: 0.7;
+    stroke-width: 3;
+    opacity: 0.5;
   }
 }
 
@@ -1832,79 +1892,80 @@ body {
   }
 }
 
-/* Status text */
-.fallout-status {
-  display: flex;
-  align-items: baseline;
+/* Progress percentage display */
+.fallout-progress-display {
   font-family: var(--font-pipboy), monospace;
+  margin-bottom: 4px;
+  text-align: center;
 }
 
-.fallout-status-text {
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
+.fallout-progress-percent {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--pipboy-green);
+  text-shadow:
+    0 0 10px var(--pipboy-green),
+    0 0 20px var(--pipboy-green),
+    0 0 40px rgba(0, 255, 0, 0.4);
+}
+
+/* Status text - stage and detail */
+.fallout-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-pipboy), monospace;
+  text-align: center;
+  gap: 4px;
+}
+
+.fallout-status-stage {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
   color: var(--pipboy-green);
   text-shadow: 0 0 8px var(--pipboy-green);
   text-transform: uppercase;
 }
 
-.fallout-dots {
-  font-size: 14px;
-  letter-spacing: 0.1em;
-  color: var(--pipboy-green);
-  text-shadow: 0 0 8px var(--pipboy-green);
-  min-width: 24px;
+.fallout-status-detail {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--pipboy-green-dim);
+  text-shadow: 0 0 4px var(--pipboy-green-dim);
+  opacity: 0.85;
+  min-height: 14px;
 }
 
 /* Progress bar */
 .fallout-progress {
   position: relative;
-  width: 160px;
+  width: 200px;
 }
 
 .fallout-progress-track {
-  height: 4px;
-  background: rgba(0, 50, 0, 0.4);
+  height: 6px;
+  background: rgba(0, 30, 0, 0.6);
   border: 1px solid var(--pipboy-green-dark);
-  border-radius: 2px;
+  border-radius: 3px;
   overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .fallout-progress-fill {
   height: 100%;
-  width: 25%;
   background: linear-gradient(
     90deg,
-    transparent 0%,
+    var(--pipboy-green-dark) 0%,
     var(--pipboy-green) 50%,
-    transparent 100%
+    var(--pipboy-green-bright) 100%
   );
-  animation: fallout-progress-slide 1.2s ease-in-out infinite;
-}
-
-.fallout-progress-glow {
-  position: absolute;
-  top: -2px;
-  left: 0;
-  right: 0;
-  height: 8px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0, 255, 0, 0.1) 50%,
-    transparent 100%
-  );
-  animation: fallout-progress-slide 1.2s ease-in-out infinite;
-  pointer-events: none;
-}
-
-@keyframes fallout-progress-slide {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(400%);
-  }
+  box-shadow:
+    0 0 8px var(--pipboy-green),
+    0 0 16px rgba(0, 255, 0, 0.3);
+  transition: width 0.15s ease-out;
+  border-radius: 2px;
 }
 
 /* Bottom label */
@@ -1983,13 +2044,20 @@ body {
 
 /* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
-  .fallout-radiation-symbol {
+  .fallout-radar {
     animation: none !important;
     filter: drop-shadow(0 0 8px var(--pipboy-green));
   }
 
-  .fallout-inner-circle {
+  .fallout-radar-scan-group {
     animation: none !important;
+    transform: rotate(45deg);
+  }
+
+  .fallout-radar-ring-inner {
+    animation: none !important;
+    stroke-width: 2;
+    opacity: 0.8;
   }
 
   .fallout-pulse-ring {
