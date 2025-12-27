@@ -21,6 +21,9 @@
       "suspicious": {
         "noUnknownAtRules": "off"
       },
+      "complexity": {
+        "noImportantStyles": "off"
+      },
       "style": {
         "useFilenamingConvention": {
           "level": "error",
