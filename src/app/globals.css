@@ -1219,8 +1219,11 @@ body {
 }
 
 .close-btn {
-  width: 24px;
-  height: 24px;
+  /* Minimum 44x44px for touch accessibility */
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1228,14 +1231,30 @@ body {
   border: 1px solid var(--pipboy-green-dark);
   border-radius: 4px;
   color: var(--pipboy-green);
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
   transition: all 0.2s ease;
+  /* Ensure touch target even if visually smaller */
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (min-width: 640px) {
+  .close-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 18px;
+  }
 }
 
 .close-btn:hover {
   background: var(--pipboy-green-dark);
   border-color: var(--pipboy-green);
+}
+
+.close-btn:active {
+  transform: scale(0.95);
 }
 
 .status-banner {
@@ -1617,5 +1636,383 @@ body {
     color: var(--pipboy-green);
     text-shadow: 0 0 6px var(--pipboy-green);
     transform: scale(1);
+  }
+}
+
+/* ===== ACCESSIBILITY: REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable CRT effects */
+  .crt-overlay::before,
+  .crt-overlay::after {
+    animation: none !important;
+  }
+
+  .pipboy-screen {
+    animation: none !important;
+  }
+
+  /* Disable pulsing indicators */
+  .status-dot,
+  .status-dot-alert,
+  .region-indicator-enhanced.alert,
+  .mobile-region-indicator.alert,
+  .status-indicator,
+  .status-indicator.alert,
+  .alert-indicator,
+  .live-dot {
+    animation: none !important;
+  }
+
+  /* Disable map region pulsing */
+  .region-path-alert {
+    animation: none !important;
+  }
+
+  /* Disable scanning effects */
+  .timeline-scanline,
+  .radar-overlay,
+  .sync-progress-scanline,
+  .counter-scanline,
+  .modal-scanline {
+    animation: none !important;
+    display: none;
+  }
+
+  /* Disable loading spinner rotation - show static */
+  .loading-spinner {
+    animation: none !important;
+    border-top-color: var(--pipboy-green);
+  }
+
+  /* Disable glow pulsing */
+  .radiation-symbol,
+  .alert-counter {
+    animation: none !important;
+  }
+
+  /* Disable scroll button bounce */
+  .scroll-btn-icon {
+    animation: none !important;
+  }
+
+  /* Disable pulse rings */
+  .pulse-ring {
+    animation: none !important;
+    display: none;
+  }
+
+  /* Disable segment pulsing */
+  .sync-segment.active {
+    animation: none !important;
+  }
+
+  /* Reduce all transitions to instant */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ===== VAULT-TEC LOADER ===== */
+.vault-boy-loader {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.loader-terminal {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 20, 0, 0.9) 0%,
+    rgba(0, 10, 0, 0.95) 100%
+  );
+  border: 2px solid var(--pipboy-green-dark);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 30px rgba(0, 255, 0, 0.05),
+    0 0 20px rgba(0, 0, 0, 0.8),
+    0 0 60px rgba(0, 255, 0, 0.1);
+}
+
+.loader-terminal::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.loader-progress-bar {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--pipboy-green-dark);
+  border-radius: 2px;
+  padding: 2px;
+}
+
+.loader-segment {
+  border-radius: 1px;
+  transition: all 0.1s ease;
+}
+
+.loader-segment-empty {
+  background: rgba(0, 50, 0, 0.3);
+}
+
+.loader-segment-filled {
+  background: var(--pipboy-green);
+  box-shadow:
+    0 0 6px var(--pipboy-green),
+    0 0 12px rgba(0, 255, 0, 0.3);
+}
+
+.loader-segment-active {
+  background: var(--pipboy-green-bright);
+  animation: segment-blink 0.3s ease-in-out infinite;
+}
+
+@keyframes segment-blink {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 8px var(--pipboy-green-bright);
+  }
+  50% {
+    opacity: 0.4;
+    box-shadow: 0 0 4px var(--pipboy-green);
+  }
+}
+
+.loader-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 255, 0, 0.15) 50%,
+    transparent 100%
+  );
+  animation: loader-scan 2s linear infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes loader-scan {
+  0% {
+    top: 0;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+/* Vault logo animation */
+.loader-vault-logo {
+  position: relative;
+}
+
+.loader-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--pipboy-green);
+  border-radius: 50%;
+  animation: ring-pulse 2s ease-out infinite;
+}
+
+.loader-ring-inner {
+  position: absolute;
+  inset: 8px;
+  border: 1px solid var(--pipboy-green-dim);
+  border-radius: 50%;
+  animation: ring-pulse 2s ease-out infinite 0.5s;
+}
+
+@keyframes ring-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Map loader radar */
+.map-loader-radar {
+  position: relative;
+}
+
+.radar-container {
+  width: 160px;
+  height: 160px;
+  position: relative;
+  border: 2px solid var(--pipboy-green-dark);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(0, 30, 0, 0.8) 0%,
+    rgba(0, 10, 0, 0.95) 100%
+  );
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 30px rgba(0, 255, 0, 0.1),
+    0 0 20px rgba(0, 0, 0, 0.6);
+}
+
+.radar-grid {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      0deg,
+      transparent 49%,
+      rgba(0, 100, 0, 0.2) 50%,
+      transparent 51%
+    ),
+    linear-gradient(
+      90deg,
+      transparent 49%,
+      rgba(0, 100, 0, 0.2) 50%,
+      transparent 51%
+    );
+}
+
+.radar-beam {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--pipboy-green) 0%, transparent 100%);
+  transform-origin: left center;
+  box-shadow: 0 0 10px var(--pipboy-green);
+}
+
+.radar-beam::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 255, 0, 0.15) 0%,
+    transparent 100%
+  );
+  transform-origin: left center;
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+}
+
+.radar-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: var(--pipboy-green);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 10px var(--pipboy-green);
+}
+
+.radar-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 1px solid rgba(0, 170, 0, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.radar-ring-1 {
+  width: 40px;
+  height: 40px;
+}
+
+.radar-ring-2 {
+  width: 80px;
+  height: 80px;
+}
+
+.radar-ring-3 {
+  width: 120px;
+  height: 120px;
+}
+
+.loader-coords {
+  letter-spacing: 0.1em;
+  animation: coords-flicker 4s linear infinite;
+}
+
+@keyframes coords-flicker {
+  0%,
+  95%,
+  100% {
+    opacity: 0.6;
+  }
+  96%,
+  98% {
+    opacity: 0.3;
+  }
+  97%,
+  99% {
+    opacity: 0.8;
+  }
+}
+
+/* Reduced motion for loaders */
+@media (prefers-reduced-motion: reduce) {
+  .vault-boy-loader {
+    animation: none !important;
+  }
+
+  .loader-scanline {
+    animation: none !important;
+    display: none;
+  }
+
+  .loader-segment-active {
+    animation: none !important;
+  }
+
+  .loader-ring,
+  .loader-ring-inner {
+    animation: none !important;
+  }
+
+  .radar-beam {
+    animation: none !important;
+  }
+
+  .loader-coords {
+    animation: none !important;
+    opacity: 0.6;
   }
 }

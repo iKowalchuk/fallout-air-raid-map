@@ -1,11 +1,9 @@
 // Public API for the alerts feature
 
 // Hooks (primary exports for consumers)
-export {
-  type UseAlertHistoryResult,
-  useAlertHistory,
-} from "./hooks/use-alert-history";
+export { type UseAlertHistoryResult } from "./hooks/use-alert-history";
 export { type UseAlertsResult, useAlerts } from "./hooks/use-alerts";
+export { type UseMessagesResult, useMessages } from "./hooks/use-messages";
 
 // Types (for all consumers)
 export type {

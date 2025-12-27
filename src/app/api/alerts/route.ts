@@ -8,9 +8,11 @@ import {
   POLLING_CONFIG,
   uidToProjectRegionId,
 } from "@/features/alerts";
+import { serverEnv } from "@/lib/env";
+import { FetchTimeoutError, fetchWithTimeout } from "@/lib/fetch-with-timeout";
 
-const API_BASE_URL = process.env.ALERTS_API_URL || "";
-const API_TOKEN = process.env.ALERTS_API_TOKEN || "";
+const API_BASE_URL = serverEnv.ALERTS_API_URL;
+const API_TOKEN = serverEnv.ALERTS_API_TOKEN;
 
 // Cache entry with Last-Modified tracking
 interface CacheEntry {
@@ -22,19 +24,12 @@ interface CacheEntry {
 let cache: CacheEntry | null = null;
 
 export async function GET(request: NextRequest) {
-  // Validate API configuration
-  if (!API_BASE_URL) {
-    console.error("ALERTS_API_URL is not configured");
+  // Environment validation happens at module load via serverEnv
+  // This check handles the development fallback case
+  if (!serverEnv.isValid) {
+    console.error("Environment variables are not properly configured");
     return NextResponse.json(
-      { error: "ALERTS_API_URL is not configured" },
-      { status: 500 },
-    );
-  }
-
-  if (!API_TOKEN) {
-    console.error("ALERTS_API_TOKEN is not configured");
-    return NextResponse.json(
-      { error: "ALERTS_API_TOKEN is not configured" },
+      { error: "Server configuration error" },
       { status: 500 },
     );
   }
@@ -72,9 +67,9 @@ export async function GET(request: NextRequest) {
       headers["If-Modified-Since"] = cache.lastModified;
     }
 
-    const upstreamResponse = await fetch(
+    const upstreamResponse = await fetchWithTimeout(
       `${API_BASE_URL}/v1/alerts/active.json`,
-      { headers },
+      { headers, timeoutMs: 10_000 },
     );
 
     // Handle 304 from upstream
@@ -180,7 +175,12 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("Failed to fetch from alerts.in.ua API:", error);
+    // Log with more context for timeout errors
+    if (error instanceof FetchTimeoutError) {
+      console.error("Request timeout:", error.message);
+    } else {
+      console.error("Failed to fetch from alerts.in.ua API:", error);
+    }
 
     // If we have cached data, return it even if expired
     if (cache) {

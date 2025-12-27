@@ -2,6 +2,7 @@
 
 import { DataSourceIndicator } from "@/components/common/data-source-indicator";
 import { ErrorBoundary } from "@/components/common/error-boundary";
+import { MapPageLoader } from "@/components/common/loader";
 import UkraineMap from "@/components/map/ukraine-map";
 import { useAlerts } from "@/features/alerts";
 
@@ -9,13 +10,7 @@ export default function MapPageClient() {
   const { alertedRegionIds, isLoading, source } = useAlerts();
 
   if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <span className="glow-text animate-pulse font-[family-name:var(--font-pipboy)] text-lg">
-          ЗАВАНТАЖЕННЯ ДАНИХ...
-        </span>
-      </div>
-    );
+    return <MapPageLoader />;
   }
 
   return (

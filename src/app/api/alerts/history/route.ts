@@ -11,9 +11,11 @@ import {
 } from "@/features/alerts";
 import { LRUCacheManager } from "@/lib/cache/lru-cache-manager";
 import { safeParseDate } from "@/lib/date-validation";
+import { serverEnv } from "@/lib/env";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 
-const API_BASE_URL = process.env.ALERTS_API_URL || "";
-const API_TOKEN = process.env.ALERTS_API_TOKEN || "";
+const API_BASE_URL = serverEnv.ALERTS_API_URL;
+const API_TOKEN = serverEnv.ALERTS_API_TOKEN;
 
 interface AlertMessage {
   id: string;
@@ -63,12 +65,13 @@ const MIN_INIT_REGIONS = Math.ceil(allUids.length * 0.25);
 
 // Fetch history for a single region
 async function fetchRegionHistory(uid: number): Promise<AlertsInUaAlert[]> {
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${API_BASE_URL}/v1/regions/${uid}/alerts/month_ago.json`,
     {
       headers: {
         Authorization: `Bearer ${API_TOKEN}`,
       },
+      timeoutMs: 15_000, // 15s timeout for history (can be slower)
     },
   );
 
@@ -246,19 +249,12 @@ function queueStaleEntriesForRefresh(): void {
 }
 
 export async function GET() {
-  // Validate API configuration
-  if (!API_BASE_URL) {
-    console.error("ALERTS_API_URL is not configured");
+  // Environment validation happens at module load via serverEnv
+  // This check handles the development fallback case
+  if (!serverEnv.isValid) {
+    console.error("Environment variables are not properly configured");
     return NextResponse.json(
-      { error: "ALERTS_API_URL is not configured" },
-      { status: 500 },
-    );
-  }
-
-  if (!API_TOKEN) {
-    console.error("ALERTS_API_TOKEN is not configured");
-    return NextResponse.json(
-      { error: "ALERTS_API_TOKEN is not configured" },
+      { error: "Server configuration error" },
       { status: 500 },
     );
   }

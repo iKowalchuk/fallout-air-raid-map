@@ -179,7 +179,7 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
           </div>
           <div className="flex w-full items-center justify-between gap-1.5 sm:w-auto sm:gap-5">
             {/* Compact inline legend - matching TimelineBar style */}
-            <div className="flex flex-wrap items-center gap-1.5 font-[family-name:var(--font-pipboy)] text-[8px] sm:gap-4 sm:text-[10px]">
+            <div className="flex flex-wrap items-center gap-1.5 font-[family-name:var(--font-pipboy)] text-[10px] sm:gap-4 sm:text-xs">
               <div className="flex items-center gap-1" title="Ракетна загроза">
                 <span
                   className="inline-block h-2.5 w-[3px] rounded-sm sm:h-3"
@@ -249,9 +249,19 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
           className="message-log-container absolute inset-0 overflow-y-auto font-[family-name:var(--font-pipboy)]"
         >
           {messages.length === 0 ? (
-            <div className="flex h-full items-center justify-center">
-              <span className="glow-text text-sm opacity-50">
-                Немає повідомлень
+            <div className="flex h-full flex-col items-center justify-center gap-3 p-4">
+              <pre className="glow-text text-center font-mono text-[10px] opacity-60 sm:text-xs">
+                {`╔═══════════════════╗
+║    VAULT-TEC      ║
+║     SECURE        ║
+╚═══════════════════╝`}
+              </pre>
+              <span className="glow-text text-center text-xs opacity-50 sm:text-sm">
+                Немає активних повідомлень.
+                <br />
+                <span className="text-pipboy-green-dim">
+                  Залишайтеся в безпеці.
+                </span>
               </span>
             </div>
           ) : (
