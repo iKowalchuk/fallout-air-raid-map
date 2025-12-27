@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import {
+  type AlertMessage,
   calculateTodayAlertPeriods,
   convertToTimelinePeriods,
-  type AlertMessage,
   type TimelinePeriod,
-} from "@/utils/alertPeriods";
+} from "@/utils/alert-periods";
 
 interface TimelineModalProps {
   isOpen: boolean;
@@ -70,7 +70,7 @@ export default function TimelineModal({
   // Time labels
   const hours = [];
   for (let i = 0; i <= 24; i += 4) {
-    hours.push(i.toString().padStart(2, "0") + ":00");
+    hours.push(`${i.toString().padStart(2, "0")}:00`);
   }
 
   // Current time position
@@ -81,14 +81,26 @@ export default function TimelineModal({
   if (!isOpen) return null;
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: Backdrop overlay for modal, not a semantic button
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          onClose();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label="Close modal"
     >
       {/* Modal content */}
       <div
         className="timeline-modal relative z-10 max-h-[60vh] w-full max-w-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
       >
         {/* Modal frame - Pip-Boy style */}
         <div className="pipboy-modal-frame">
@@ -100,6 +112,7 @@ export default function TimelineModal({
               </span>
             </div>
             <button
+              type="button"
               onClick={onClose}
               className="glow-text font-[family-name:var(--font-pipboy)] text-[10px] tracking-wider opacity-70 transition-all hover:text-[var(--pipboy-alert-red)] hover:opacity-100"
             >
@@ -151,20 +164,23 @@ export default function TimelineModal({
                       {/* Timeline bar */}
                       <div className="timeline-bar-enhanced relative h-5 flex-1 overflow-hidden rounded">
                         {/* Grid lines */}
-                        {[...Array(24)].map((_, i) => (
+                        {Array.from({ length: 24 }, (_, i) => ({
+                          id: `grid-line-${i}`,
+                          position: i,
+                        })).map((line) => (
                           <div
-                            key={i}
+                            key={line.id}
                             className="absolute top-0 bottom-0 w-px bg-[var(--pipboy-green-dark)] opacity-30"
-                            style={{ left: `${(i / 24) * 100}%` }}
+                            style={{ left: `${(line.position / 24) * 100}%` }}
                           />
                         ))}
 
                         {/* Alert periods - render active (red) first, then inactive (green) on top */}
                         {periods
                           .filter((p) => p.isActive)
-                          .map((period, i) => (
+                          .map((period) => (
                             <div
-                              key={`active-${i}`}
+                              key={`active-${period.regionName}-${period.start}`}
                               className="alert-period-active absolute top-1 bottom-1 rounded-sm transition-all"
                               style={{
                                 left: `${period.start}%`,
@@ -175,9 +191,9 @@ export default function TimelineModal({
                           ))}
                         {periods
                           .filter((p) => !p.isActive)
-                          .map((period, i) => (
+                          .map((period) => (
                             <div
-                              key={`inactive-${i}`}
+                              key={`inactive-${period.regionName}-${period.start}`}
                               className="alert-period absolute top-1 bottom-1 rounded-sm transition-all"
                               style={{
                                 left: `${period.start}%`,

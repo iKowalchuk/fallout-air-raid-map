@@ -1,10 +1,10 @@
+import type { ApiAlertType } from "./alerts-api";
 import type { AlertType } from "./alerts-internal";
 import {
-  AlertTypeSchema,
   AlertsApiResponseSchema,
+  AlertTypeSchema,
   HistoryApiResponseSchema,
 } from "./alerts-internal";
-import type { ApiAlertType } from "./alerts-api";
 
 // === Type Mapping (API -> Internal) ===
 const ALERT_TYPE_MAP: Record<ApiAlertType, AlertType> = {

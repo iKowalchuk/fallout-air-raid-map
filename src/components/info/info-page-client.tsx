@@ -1,14 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import AlertStatus from "@/components/info/AlertStatus";
-import MessageLog from "@/components/info/MessageLog";
-import TimelineBar from "@/components/info/TimelineBar";
-import { ErrorBoundary } from "@/components/common/ErrorBoundary";
-import { DataSourceIndicator } from "@/components/common/DataSourceIndicator";
-import { useAlerts } from "@/hooks/useAlerts";
-import { useAlertHistory } from "@/hooks/useAlertHistory";
+import { DataSourceIndicator } from "@/components/common/data-source-indicator";
+import { ErrorBoundary } from "@/components/common/error-boundary";
+import AlertStatus from "@/components/info/alert-status";
+import MessageLog from "@/components/info/message-log";
+import TimelineBar from "@/components/info/timeline-bar";
 import { getRegionById } from "@/data/regions";
+import { useAlertHistory } from "@/hooks/use-alert-history";
+import { useAlerts } from "@/hooks/use-alerts";
 
 export default function InfoPageClient() {
   const {
@@ -34,7 +34,7 @@ export default function InfoPageClient() {
         const region = getRegionById(alert.regionId);
         return {
           id: `active-${alert.regionId}`,
-          timestamp: alert.startTime!,
+          timestamp: alert.startTime || new Date(),
           regionId: alert.regionId,
           regionName: region?.nameUa || alert.regionId,
           type: "alert_start" as const,

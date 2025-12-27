@@ -1,10 +1,10 @@
 import { z } from "zod";
 import {
-  API_ALERT_TYPES,
-  LOCATION_TYPES,
   AlertIdSchema,
-  LocationUidSchema,
+  API_ALERT_TYPES,
   ISODateTimeSchema,
+  LOCATION_TYPES,
+  LocationUidSchema,
   NullableISODateTimeSchema,
 } from "./common";
 

@@ -1,8 +1,8 @@
 "use client";
 
-import type { ClientAlertMessage } from "@/schemas";
-import type { CacheStatus } from "@/hooks/useAlertHistory";
 import { useEffect, useRef, useState } from "react";
+import type { CacheStatus } from "@/hooks/use-alert-history";
+import type { ClientAlertMessage } from "@/schemas";
 
 function formatTimestamp(date: Date): string {
   return date.toLocaleTimeString("uk-UA", {
@@ -53,13 +53,16 @@ function SyncProgress({ cacheStatus }: { cacheStatus: CacheStatus }) {
         </span>
       </div>
       <div className="sync-progress-bar">
-        {Array.from({ length: segments }).map((_, i) => (
+        {Array.from({ length: segments }, (_, i) => ({
+          id: `segment-${i}`,
+          index: i,
+        })).map((segment) => (
           <div
-            key={i}
+            key={segment.id}
             className={`sync-segment ${
-              i < filledSegments
+              segment.index < filledSegments
                 ? "filled"
-                : i === filledSegments && !isComplete
+                : segment.index === filledSegments && !isComplete
                   ? "active"
                   : ""
             }`}
@@ -100,7 +103,6 @@ function getThreatLevel(
       return "medium";
     case "alert_end":
       return "clear";
-    case "info":
     default:
       return "low";
   }
@@ -309,6 +311,7 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
         {/* Scroll to top button - positioned inside message container */}
         {!isAtTop && (
           <button
+            type="button"
             onClick={() => {
               if (scrollRef.current) {
                 scrollRef.current.scrollTo({

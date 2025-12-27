@@ -38,6 +38,7 @@ export default function MobileRegionDrawer({
     <div className="md:hidden">
       {/* Collapsed bar */}
       <button
+        type="button"
         onClick={() => setIsExpanded(!isExpanded)}
         className="mobile-drawer-toggle w-full"
         aria-expanded={isExpanded}
@@ -70,10 +71,9 @@ export default function MobileRegionDrawer({
       </button>
 
       {/* Expanded drawer */}
-      <div
+      <section
         id="mobile-region-list"
         className={`mobile-drawer ${isExpanded ? "expanded" : ""}`}
-        role="region"
         aria-label="Список регіонів"
       >
         <div className="mobile-drawer-content">
@@ -84,6 +84,7 @@ export default function MobileRegionDrawer({
 
               return (
                 <button
+                  type="button"
                   key={region.id}
                   className={`mobile-region-item ${isAlert ? "alert" : ""} ${isHovered ? "hovered" : ""}`}
                   onTouchStart={() => onRegionHover(region.id)}
@@ -120,7 +121,7 @@ export default function MobileRegionDrawer({
             })}
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

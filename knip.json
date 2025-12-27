@@ -1,13 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignoreBinaries": ["prettier"],
-  "ignoreDependencies": ["prettier-plugin-tailwindcss"],
+  "ignoreBinaries": ["only-allow"],
+  "ignoreDependencies": ["postcss"],
   "ignoreExportsUsedInFile": {
     "interface": true,
     "type": true
   },
-  "tags": ["-lintignore"],
-  "workspaces": {
-    ".": {}
-  }
+  "tags": ["-lintignore"]
 }

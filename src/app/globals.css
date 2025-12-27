@@ -19,17 +19,17 @@
   /* Glow effects */
   --glow-small: 0 0 2px var(--pipboy-green), 0 0 4px var(--pipboy-green);
   --glow-medium:
-    0 0 4px var(--pipboy-green), 0 0 8px var(--pipboy-green),
-    0 0 12px var(--pipboy-green);
+    0 0 4px var(--pipboy-green), 0 0 8px var(--pipboy-green), 0 0 12px
+    var(--pipboy-green);
   --glow-large:
-    0 0 8px var(--pipboy-green), 0 0 16px var(--pipboy-green),
-    0 0 24px var(--pipboy-green);
+    0 0 8px var(--pipboy-green), 0 0 16px var(--pipboy-green), 0 0 24px
+    var(--pipboy-green);
 
   --glow-red-small:
     0 0 2px var(--pipboy-alert-red), 0 0 4px var(--pipboy-alert-red);
   --glow-red-medium:
-    0 0 4px var(--pipboy-alert-red), 0 0 8px var(--pipboy-alert-red),
-    0 0 12px var(--pipboy-alert-red);
+    0 0 4px var(--pipboy-alert-red), 0 0 8px var(--pipboy-alert-red), 0 0 12px
+    var(--pipboy-alert-red);
 
   /* Background */
   --background: var(--pipboy-dark);
@@ -61,6 +61,16 @@ body {
 
 body {
   font-family: var(--font-pipboy), "Courier New", monospace;
+}
+
+/* Remove default focus outline and add custom Pip-Boy themed outline */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--pipboy-green);
+  outline-offset: 2px;
 }
 
 /* ===== CRT SCANLINE EFFECT ===== */
@@ -291,6 +301,14 @@ body {
   stroke-width: 2;
   transition: all 0.3s ease;
   cursor: pointer;
+  outline: none;
+}
+
+.region-path:focus {
+  outline: none;
+  stroke: var(--pipboy-green-bright);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 4px var(--pipboy-green));
 }
 
 .region-path-safe {

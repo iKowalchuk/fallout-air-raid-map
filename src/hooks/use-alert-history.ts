@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { parseHistoryResponse, type MessageType } from "@/schemas";
+import { useCallback, useEffect, useState } from "react";
 import { POLLING_CONFIG } from "@/config/polling";
+import { type MessageType, parseHistoryResponse } from "@/schemas";
 
 // Local alert message type with Date instead of string for timestamp
 interface AlertMessage {

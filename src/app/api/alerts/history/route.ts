@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
-import {
-  uidToProjectRegionId,
-  oblastNameToProjectRegionId,
-  getAllUids,
-} from "@/data/regionMapping";
-import {
-  AlertsInUaHistoryResponseSchema,
-  type AlertsInUaAlert,
-  type MessageType,
-  type HistoryApiResponse,
-} from "@/schemas";
 import { POLLING_CONFIG } from "@/config/polling";
+import {
+  getAllUids,
+  oblastNameToProjectRegionId,
+  uidToProjectRegionId,
+} from "@/data/region-mapping";
+import {
+  type AlertsInUaAlert,
+  AlertsInUaHistoryResponseSchema,
+  type HistoryApiResponse,
+  type MessageType,
+} from "@/schemas";
 
 const API_BASE_URL = process.env.ALERTS_API_URL || "";
 const API_TOKEN = process.env.ALERTS_API_TOKEN || "";

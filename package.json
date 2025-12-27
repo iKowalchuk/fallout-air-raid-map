@@ -6,13 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
-    "format": "prettier . --write",
-    "format:check": "prettier . --check",
+    "test": "echo \"No tests configured yet\"",
+    "lint": "biome check",
+    "format": "biome format --write",
     "type-check": "tsc --noEmit",
     "knip": "knip",
-    "test": "echo \"No tests configured yet\""
+    "preinstall": "npx only-allow pnpm",
+    "prepare": "husky"
   },
   "dependencies": {
     "next": "16.1.1",
@@ -21,17 +21,17 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.3.10",
+    "@commitlint/cli": "^20.2.0",
+    "@commitlint/config-conventional": "^20.2.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^25.0.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "eslint": "^9.39.2",
-    "eslint-config-next": "16.1.1",
-    "eslint-config-prettier": "^10.1.8",
+    "babel-plugin-react-compiler": "1.0.0",
+    "husky": "^9.1.7",
     "knip": "^5.77.1",
-    "postcss": "^8.5.6",
-    "prettier": "^3.7.4",
-    "prettier-plugin-tailwindcss": "^0.7.2",
+    "lint-staged": "^16.2.7",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3"
   },

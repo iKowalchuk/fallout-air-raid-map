@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import {
-  parseAlertsResponse,
-  isValidAlertType,
-  type AlertType,
-} from "@/schemas";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { POLLING_CONFIG } from "@/config/polling";
+import {
+  type AlertType,
+  isValidAlertType,
+  parseAlertsResponse,
+} from "@/schemas";
 
 // Local alert state with Date instead of string for startTime
 interface LocalAlertState {

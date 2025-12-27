@@ -1,5 +1,5 @@
-import PipBoyFrame from "@/components/layout/PipBoyFrame";
-import InfoPageClient from "@/components/info/InfoPageClient";
+import InfoPageClient from "@/components/info/info-page-client";
+import PipBoyFrame from "@/components/layout/pip-boy-frame";
 
 export default function InfoPage() {
   return (

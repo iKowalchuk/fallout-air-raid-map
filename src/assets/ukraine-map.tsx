@@ -98,6 +98,8 @@ export default function UkraineMapSVG({
       viewBox="0 20 780 680"
       className="h-full max-h-[450px] w-full"
       style={{ filter: "drop-shadow(0 0 10px rgba(0, 255, 0, 0.25))" }}
+      role="img"
+      aria-label="Ukraine regions map"
     >
       {/* Glow filter */}
       <defs>
@@ -126,17 +128,28 @@ export default function UkraineMapSVG({
       {/* Render all regions */}
       <g filter="url(#glow)">
         {Object.entries(REGION_PATHS).map(([regionId, pathData]) => (
+          // biome-ignore lint/a11y/useSemanticElements: SVG path elements cannot be replaced with button elements
           <path
             key={regionId}
             id={regionId}
             d={pathData}
             className={getRegionClass(regionId)}
+            role="button"
+            tabIndex={0}
             onMouseEnter={() => onRegionHover?.(regionId)}
             onMouseLeave={() => onRegionHover?.(null)}
             onClick={() => {
               // Only call onRegionClick if not already selected (to avoid closing the info panel)
               if (selectedRegion !== regionId) {
                 onRegionClick?.(regionId);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                if (selectedRegion !== regionId) {
+                  onRegionClick?.(regionId);
+                }
               }
             }}
           >

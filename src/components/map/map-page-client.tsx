@@ -1,9 +1,9 @@
 "use client";
 
-import UkraineMap from "@/components/map/UkraineMap";
-import { ErrorBoundary } from "@/components/common/ErrorBoundary";
-import { DataSourceIndicator } from "@/components/common/DataSourceIndicator";
-import { useAlerts } from "@/hooks/useAlerts";
+import { DataSourceIndicator } from "@/components/common/data-source-indicator";
+import { ErrorBoundary } from "@/components/common/error-boundary";
+import UkraineMap from "@/components/map/ukraine-map";
+import { useAlerts } from "@/hooks/use-alerts";
 
 export default function MapPageClient() {
   const { alertedRegionIds, isLoading, source } = useAlerts();

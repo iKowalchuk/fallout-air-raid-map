@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import UkraineMapSVG from "@/assets/ukraine-map";
-import RegionList from "./RegionList";
-import MobileRegionDrawer from "./MobileRegionDrawer";
-import RegionInfoPanel from "./RegionInfoPanel";
 import {
-  getLeftRegions,
-  getRightRegions,
-  getRegionById,
   getAllRegions,
+  getLeftRegions,
+  getRegionById,
+  getRightRegions,
 } from "@/data/regions";
+import MobileRegionDrawer from "./mobile-region-drawer";
+import RegionInfoPanel from "./region-info-panel";
+import RegionList from "./region-list";
 
 interface UkraineMapProps {
   alertedRegions: string[];

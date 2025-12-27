@@ -1,6 +1,7 @@
 "use client";
 
-import React, { Component, ReactNode } from "react";
+import type React from "react";
+import { Component, type ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -50,6 +51,7 @@ export class ErrorBoundary extends Component<Props, State> {
           </p>
 
           <button
+            type="button"
             onClick={this.handleRetry}
             className="border border-[var(--pipboy-green)] px-4 py-2 font-[family-name:var(--font-pipboy)] text-sm text-[var(--pipboy-green)] transition-colors hover:bg-[var(--pipboy-green)] hover:text-[var(--pipboy-dark)]"
           >

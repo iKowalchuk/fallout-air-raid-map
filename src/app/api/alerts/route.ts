@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
+import { POLLING_CONFIG } from "@/config/polling";
 import {
-  uidToProjectRegionId,
   oblastNameToProjectRegionId,
-} from "@/data/regionMapping";
+  uidToProjectRegionId,
+} from "@/data/region-mapping";
 import {
+  type AlertsApiResponse,
   AlertsInUaActiveResponseSchema,
   mapAlertType,
-  type AlertsApiResponse,
 } from "@/schemas";
-import { POLLING_CONFIG } from "@/config/polling";
 
 const API_BASE_URL = process.env.ALERTS_API_URL || "";
 const API_TOKEN = process.env.ALERTS_API_TOKEN || "";

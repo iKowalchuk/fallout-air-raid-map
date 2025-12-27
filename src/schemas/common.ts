@@ -45,7 +45,7 @@ export const AlertIdSchema = z.number().brand<"AlertId">();
 // API може повертати дати з або без timezone offset
 export const ISODateTimeSchema = z
   .string()
-  .refine((val) => !isNaN(Date.parse(val)), {
+  .refine((val) => !Number.isNaN(Date.parse(val)), {
     message: "Invalid datetime string",
   });
 export const NullableISODateTimeSchema = ISODateTimeSchema.nullable();

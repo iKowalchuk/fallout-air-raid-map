@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+  type AlertMessage,
   calculateTodayAlertPeriods,
   convertToTimelinePeriods,
-  type AlertMessage,
   type TimelinePeriod,
-} from "@/utils/alertPeriods";
-import TimelineModal from "./TimelineModal";
+} from "@/utils/alert-periods";
+import TimelineModal from "./timeline-modal";
 
 interface TimelineBarProps {
   messages: AlertMessage[];
@@ -26,7 +26,7 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
   // Generate time labels for the timeline (last 24 hours)
   const hours = [];
   for (let i = 0; i <= 24; i += 4) {
-    hours.push(i.toString().padStart(2, "0") + ":00");
+    hours.push(`${i.toString().padStart(2, "0")}:00`);
   }
 
   useEffect(() => {
@@ -61,20 +61,27 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
         {/* Timeline background */}
         <div className="timeline-bar-enhanced relative h-6 overflow-hidden rounded">
           {/* Grid lines */}
-          {[...Array(24)].map((_, i) => (
+          {Array.from({ length: 24 }, (_, i) => ({
+            id: `grid-${i}`,
+            position: i,
+          })).map((line) => (
             <div
-              key={i}
+              key={line.id}
               className="absolute top-0 bottom-0 w-px bg-[var(--pipboy-green-dark)] opacity-30"
-              style={{ left: `${(i / 24) * 100}%` }}
+              style={{ left: `${(line.position / 24) * 100}%` }}
             />
           ))}
 
           {/* Alert periods - render active (red) first, then inactive (green) on top */}
           {alertPeriods
             .filter((p) => p.isActive)
-            .map((period, i) => (
+            .map((period) => (
+              // biome-ignore lint/a11y/useSemanticElements: Cannot use button element inside positioned timeline
               <div
-                key={`active-${i}`}
+                key={`active-${period.regionName}-${period.start}`}
+                role="button"
+                tabIndex={0}
+                aria-label={`Активна тривога: ${period.regionName}`}
                 className={`alert-period-active absolute top-1 bottom-1 cursor-pointer rounded-sm transition-all duration-200 ${hoveredPeriod === period ? "scale-y-110 opacity-100" : "opacity-80"}`}
                 style={{
                   left: `${period.start}%`,
@@ -86,13 +93,24 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
                   setSelectedRegion(period.regionName);
                   setIsModalOpen(true);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedRegion(period.regionName);
+                    setIsModalOpen(true);
+                  }
+                }}
               />
             ))}
           {alertPeriods
             .filter((p) => !p.isActive)
-            .map((period, i) => (
+            .map((period) => (
+              // biome-ignore lint/a11y/useSemanticElements: Cannot use button element inside positioned timeline
               <div
-                key={`inactive-${i}`}
+                key={`inactive-${period.regionName}-${period.start}`}
+                role="button"
+                tabIndex={0}
+                aria-label={`Завершена тривога: ${period.regionName}`}
                 className={`alert-period absolute top-1 bottom-1 cursor-pointer rounded-sm transition-all duration-200 ${hoveredPeriod === period ? "scale-y-110 opacity-100" : "opacity-80"}`}
                 style={{
                   left: `${period.start}%`,
@@ -103,6 +121,13 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
                 onClick={() => {
                   setSelectedRegion(period.regionName);
                   setIsModalOpen(true);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedRegion(period.regionName);
+                    setIsModalOpen(true);
+                  }
                 }}
               />
             ))}

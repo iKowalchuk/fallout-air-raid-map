@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useSyncExternalStore } from "react";
-import { formatTime, formatDate, getWarDay } from "@/utils/dateFormatting";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { formatDate, formatTime, getWarDay } from "@/utils/date-formatting";
 
 interface HeaderProps {
   activeTab: "info" | "map";

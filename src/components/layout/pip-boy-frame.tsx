@@ -1,7 +1,7 @@
 "use client";
 
-import { ReactNode } from "react";
-import Header from "./Header";
+import type { ReactNode } from "react";
+import Header from "./header";
 
 interface PipBoyFrameProps {
   children: ReactNode;

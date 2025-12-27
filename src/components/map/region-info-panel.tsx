@@ -29,7 +29,12 @@ export default function RegionInfoPanel({
           </h3>
           <span className="glow-text text-xs opacity-60">{region.nameEn}</span>
         </div>
-        <button onClick={onClose} className="close-btn" aria-label="Close">
+        <button
+          type="button"
+          onClick={onClose}
+          className="close-btn"
+          aria-label="Close"
+        >
           ×
         </button>
       </div>
