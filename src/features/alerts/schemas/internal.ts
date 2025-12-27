@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { INTERNAL_ALERT_TYPES, MESSAGE_TYPES } from "./common";
+import { INTERNAL_ALERT_TYPES, MESSAGE_TYPES } from "./constants";
 
 // === Internal Alert Types ===
 export const AlertTypeSchema = z.enum(INTERNAL_ALERT_TYPES);
@@ -36,24 +36,18 @@ const AlertMessageSchema = z.object({
   message: z.string(),
 });
 
-export type AlertMessage = z.infer<typeof AlertMessageSchema>;
-
-// === Client Alert Message (Date timestamp for client-side usage) ===
-export interface ClientAlertMessage extends Omit<AlertMessage, "timestamp"> {
-  timestamp: Date;
-}
+// === Cache Status ===
+const CacheStatusSchema = z.object({
+  cachedRegions: z.number(),
+  pendingRegions: z.number(),
+});
 
 // === History API Response ===
 export const HistoryApiResponseSchema = z.object({
   messages: z.array(AlertMessageSchema),
   source: z.enum(["api", "cache"]),
   lastUpdate: z.string(),
-  cacheStatus: z
-    .object({
-      cachedRegions: z.number(),
-      pendingRegions: z.number(),
-    })
-    .optional(),
+  cacheStatus: CacheStatusSchema.optional(),
 });
 
 export type HistoryApiResponse = z.infer<typeof HistoryApiResponseSchema>;

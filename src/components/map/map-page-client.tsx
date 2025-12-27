@@ -3,7 +3,7 @@
 import { DataSourceIndicator } from "@/components/common/data-source-indicator";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import UkraineMap from "@/components/map/ukraine-map";
-import { useAlerts } from "@/hooks/use-alerts";
+import { useAlerts } from "@/features/alerts";
 
 export default function MapPageClient() {
   const { alertedRegionIds, isLoading, source } = useAlerts();

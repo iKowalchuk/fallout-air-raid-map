@@ -1,22 +1,27 @@
-import { NextResponse } from "next/server";
-import { POLLING_CONFIG } from "@/config/polling";
-import {
-  oblastNameToProjectRegionId,
-  uidToProjectRegionId,
-} from "@/data/region-mapping";
+import { type NextRequest, NextResponse } from "next/server";
 import {
   type AlertsApiResponse,
   AlertsInUaActiveResponseSchema,
+  getHigherPriorityAlert,
   mapAlertType,
-} from "@/schemas";
+  oblastNameToProjectRegionId,
+  POLLING_CONFIG,
+  uidToProjectRegionId,
+} from "@/features/alerts";
 
 const API_BASE_URL = process.env.ALERTS_API_URL || "";
 const API_TOKEN = process.env.ALERTS_API_TOKEN || "";
 
-// Response caching to avoid rate limits
-let cachedData: { data: AlertsApiResponse; timestamp: number } | null = null;
+// Cache entry with Last-Modified tracking
+interface CacheEntry {
+  data: AlertsApiResponse;
+  timestamp: number;
+  lastModified: string | null;
+}
 
-export async function GET() {
+let cache: CacheEntry | null = null;
+
+export async function GET(request: NextRequest) {
   // Validate API configuration
   if (!API_BASE_URL) {
     console.error("ALERTS_API_URL is not configured");
@@ -34,26 +39,63 @@ export async function GET() {
     );
   }
 
-  // Check cache
+  const clientIfModifiedSince = request.headers.get("If-Modified-Since");
+
+  // Check cache freshness
   if (
-    cachedData &&
-    Date.now() - cachedData.timestamp < POLLING_CONFIG.ALERTS_CACHE_TTL_MS
+    cache &&
+    Date.now() - cache.timestamp < POLLING_CONFIG.ALERTS_CACHE_TTL_MS
   ) {
-    return NextResponse.json(cachedData.data);
+    // If client has up-to-date data, return 304
+    if (clientIfModifiedSince && cache.lastModified === clientIfModifiedSince) {
+      return new NextResponse(null, { status: 304 });
+    }
+
+    const response = NextResponse.json(cache.data);
+    if (cache.lastModified) {
+      response.headers.set("Last-Modified", cache.lastModified);
+    }
+    response.headers.set(
+      "Cache-Control",
+      `public, max-age=${Math.floor(POLLING_CONFIG.ALERTS_CACHE_TTL_MS / 1000)}`,
+    );
+    return response;
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/v1/alerts/active.json`, {
-      headers: {
-        Authorization: `Bearer ${API_TOKEN}`,
-      },
-    });
+    const headers: HeadersInit = {
+      Authorization: `Bearer ${API_TOKEN}`,
+    };
 
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+    // Forward If-Modified-Since to upstream if we have cached data
+    if (cache?.lastModified) {
+      headers["If-Modified-Since"] = cache.lastModified;
     }
 
-    const rawData = await response.json();
+    const upstreamResponse = await fetch(
+      `${API_BASE_URL}/v1/alerts/active.json`,
+      { headers },
+    );
+
+    // Handle 304 from upstream
+    if (upstreamResponse.status === 304 && cache) {
+      cache.timestamp = Date.now();
+      const response = NextResponse.json(cache.data);
+      if (cache.lastModified) {
+        response.headers.set("Last-Modified", cache.lastModified);
+      }
+      response.headers.set(
+        "Cache-Control",
+        `public, max-age=${Math.floor(POLLING_CONFIG.ALERTS_CACHE_TTL_MS / 1000)}`,
+      );
+      return response;
+    }
+
+    if (!upstreamResponse.ok) {
+      throw new Error(`API error: ${upstreamResponse.status}`);
+    }
+
+    const rawData = await upstreamResponse.json();
 
     // Validate API response with zod
     const parseResult = AlertsInUaActiveResponseSchema.safeParse(rawData);
@@ -64,7 +106,7 @@ export async function GET() {
 
     const apiData = parseResult.data;
 
-    // Aggregate all active alerts to oblast level using oblast name
+    // Aggregate all active alerts to oblast level with priority-based selection
     const oblastAlerts = new Map<
       string,
       { alertType: string; startTime: string | null }
@@ -78,21 +120,28 @@ export async function GET() {
       let projectRegionId: string | null = null;
 
       if (alert.location_type === "oblast") {
-        // For oblast-level records, use location_uid directly
         projectRegionId = uidToProjectRegionId(alert.location_uid);
       } else {
-        // For sub-oblast records (hromada, raion, city), use location_oblast name
         projectRegionId = oblastNameToProjectRegionId(alert.location_oblast);
       }
 
       if (!projectRegionId) continue;
 
-      // Store the first (oldest) alert for the oblast
-      if (!oblastAlerts.has(projectRegionId)) {
-        oblastAlerts.set(projectRegionId, {
-          alertType: alert.alert_type,
-          startTime: alert.started_at || null,
-        });
+      const candidateAlert = {
+        alertType: alert.alert_type,
+        startTime: alert.started_at || null,
+      };
+
+      // CRITICAL FIX: Use priority-based aggregation instead of first-wins
+      // Priority: nuclear > chemical > artillery > urban_fights > air_raid
+      const existing = oblastAlerts.get(projectRegionId);
+
+      if (!existing) {
+        oblastAlerts.set(projectRegionId, candidateAlert);
+      } else {
+        // Compare and keep higher priority alert
+        const higherPriority = getHigherPriorityAlert(existing, candidateAlert);
+        oblastAlerts.set(projectRegionId, higherPriority);
       }
     }
 
@@ -113,25 +162,40 @@ export async function GET() {
     };
 
     // Update cache
-    cachedData = {
+    const lastModified = upstreamResponse.headers.get("Last-Modified");
+    cache = {
       data: responseData,
       timestamp: Date.now(),
+      lastModified,
     };
 
-    return NextResponse.json(responseData);
+    const response = NextResponse.json(responseData);
+    if (lastModified) {
+      response.headers.set("Last-Modified", lastModified);
+    }
+    response.headers.set(
+      "Cache-Control",
+      `public, max-age=${Math.floor(POLLING_CONFIG.ALERTS_CACHE_TTL_MS / 1000)}`,
+    );
+
+    return response;
   } catch (error) {
     console.error("Failed to fetch from alerts.in.ua API:", error);
 
     // If we have cached data, return it even if expired
-    if (cachedData) {
-      return NextResponse.json({
-        ...cachedData.data,
+    if (cache) {
+      const response = NextResponse.json({
+        ...cache.data,
         source: "cache",
         error: "API unavailable, using cached data",
       } satisfies AlertsApiResponse);
+      if (cache.lastModified) {
+        response.headers.set("Last-Modified", cache.lastModified);
+      }
+      return response;
     }
 
-    // No cached data available - return empty response with cache source
+    // No cached data available - return empty response
     return NextResponse.json({
       alerts: [],
       source: "cache",

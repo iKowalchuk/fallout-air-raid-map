@@ -7,8 +7,7 @@ import AlertStatus from "@/components/info/alert-status";
 import MessageLog from "@/components/info/message-log";
 import TimelineBar from "@/components/info/timeline-bar";
 import { getRegionById } from "@/data/regions";
-import { useAlertHistory } from "@/hooks/use-alert-history";
-import { useAlerts } from "@/hooks/use-alerts";
+import { useAlertHistory, useAlerts } from "@/features/alerts";
 
 export default function InfoPageClient() {
   const {

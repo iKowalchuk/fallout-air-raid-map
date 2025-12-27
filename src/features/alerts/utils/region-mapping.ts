@@ -65,7 +65,7 @@ const UID_TO_PROJECT_REGION: Record<number, string> = {
 
 // Convert API UID to project ID
 export function uidToProjectRegionId(uid: number | string): string | null {
-  const numericUid = typeof uid === "string" ? parseInt(uid, 10) : uid;
+  const numericUid = typeof uid === "string" ? Number.parseInt(uid, 10) : uid;
   return UID_TO_PROJECT_REGION[numericUid] ?? null;
 }
 
