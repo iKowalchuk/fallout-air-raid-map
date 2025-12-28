@@ -32,19 +32,17 @@ export function AppInitializer({
   const alertsQuery = useActiveAlerts();
   const historyQuery = useAlertHistoryQuery();
 
-  // Determine loading and data states based on query success
-  const alertsReady = alertsQuery.status === "success";
-  const historyReady = historyQuery.status === "success";
+  // Determine loading and data states based on query success OR having data
+  // Note: Check for `data !== undefined` handles prefetched/cached data that
+  // may not have status "success" yet during hydration
+  const alertsReady =
+    alertsQuery.status === "success" || alertsQuery.data !== undefined;
+  const historyReady =
+    historyQuery.status === "success" || historyQuery.data !== undefined;
 
   // Calculate if we have required data based on page needs
   const hasRequiredData =
     requiredData === "alerts" ? alertsReady : alertsReady && historyReady;
-
-  // Calculate if we're still loading required data
-  const isLoadingRequired =
-    requiredData === "alerts"
-      ? alertsQuery.isLoading
-      : alertsQuery.isLoading || historyQuery.isLoading;
 
   // Mark as initialized when required data is loaded
   useEffect(() => {
@@ -53,10 +51,15 @@ export function AppInitializer({
     }
   }, [isInitialized, hasRequiredData, markAsInitialized]);
 
-  // Show loader only on cold start (not initialized yet) AND still loading
-  const shouldShowLoader = !isInitialized && isLoadingRequired;
+  // Show global loader only on cold start (first app load).
+  // Once initialized, skip the loader - pages handle their own loading states.
+  // This ensures instant navigation between pages after initial load.
+  if (isInitialized) {
+    return <>{children}</>;
+  }
 
-  if (shouldShowLoader) {
+  // On cold start, wait for required data before showing content
+  if (!hasRequiredData) {
     return <AppInitializationLoader />;
   }
 
