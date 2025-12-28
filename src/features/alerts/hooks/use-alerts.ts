@@ -8,6 +8,8 @@ export interface UseAlertsResult {
   alertedRegionIds: string[];
   alertCount: number;
   isLoading: boolean;
+  /** Whether data exists (from cache or API) */
+  hasData: boolean;
   error: string | null;
   source: "api" | "cache" | null;
   lastUpdate: Date | null;
@@ -23,6 +25,7 @@ export function useAlerts(): UseAlertsResult {
     alertedRegionIds: data?.alertedRegionIds ?? [],
     alertCount: data?.alertCount ?? 0,
     isLoading,
+    hasData: data !== undefined,
     error: error?.message ?? data?.error ?? null,
     source: data?.source ?? null,
     lastUpdate: data?.lastUpdate ?? null,

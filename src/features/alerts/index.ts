@@ -3,7 +3,12 @@
 // Hooks (primary exports for consumers)
 export type { UseAlertHistoryResult } from "./hooks/use-alert-history";
 export { type UseAlertsResult, useAlerts } from "./hooks/use-alerts";
+export {
+  type UseAppInitializationResult,
+  useAppInitialization,
+} from "./hooks/use-app-initialization";
 export { type UseMessagesResult, useMessages } from "./hooks/use-messages";
+export { usePrefetchData } from "./hooks/use-prefetch-data";
 
 // Types (for all consumers)
 export type {

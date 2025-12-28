@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Share_Tech_Mono } from "next/font/google";
+import { AppInitializationProvider } from "@/providers/app-initialization-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
 
@@ -22,7 +23,9 @@ export default function RootLayout({
   return (
     <html lang="uk">
       <body className={`${shareTechMono.variable} antialiased`}>
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider>
+          <AppInitializationProvider>{children}</AppInitializationProvider>
+        </QueryProvider>
         <div className="crt-overlay" aria-hidden="true" />
       </body>
     </html>

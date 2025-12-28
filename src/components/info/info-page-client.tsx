@@ -2,25 +2,14 @@
 
 import { DataSourceIndicator } from "@/components/common/data-source-indicator";
 import { ErrorBoundary } from "@/components/common/error-boundary";
-import { InfoPageLoader } from "@/components/common/loader";
 import AlertStatus from "@/components/info/alert-status";
 import MessageLog from "@/components/info/message-log";
 import TimelineBar from "@/components/info/timeline-bar";
 import { useMessages } from "@/features/alerts";
 
 export default function InfoPageClient() {
-  const {
-    messages,
-    alertCount,
-    isAlertActive,
-    isLoading,
-    source,
-    cacheStatus,
-  } = useMessages();
-
-  if (isLoading) {
-    return <InfoPageLoader />;
-  }
+  const { messages, alertCount, isAlertActive, source, cacheStatus } =
+    useMessages();
 
   return (
     <div className="animate-fade-in relative flex h-full flex-col">

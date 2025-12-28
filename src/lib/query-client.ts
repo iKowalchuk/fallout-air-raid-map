@@ -6,8 +6,9 @@ function makeQueryClient(): QueryClient {
       queries: {
         // Prevent immediate refetch after SSR hydration
         staleTime: 60 * 1000,
-        // Keep unused data in cache for 5 minutes
-        gcTime: 5 * 60 * 1000,
+        // Keep unused data in cache for 10 minutes (increased from 5)
+        // Gives more buffer for navigation between pages
+        gcTime: 10 * 60 * 1000,
         // Retry failed requests with exponential backoff
         retry: 2,
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),

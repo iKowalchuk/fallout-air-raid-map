@@ -19,6 +19,8 @@ export interface UseMessagesResult {
   isAlertActive: boolean;
   /** Loading state for either alerts or history */
   isLoading: boolean;
+  /** Whether any data exists (from cache or API) */
+  hasData: boolean;
   /** Data source - "api" or "cache" */
   source: "api" | "cache" | null;
   /** Cache status for history data */
@@ -88,6 +90,7 @@ export function useMessages(): UseMessagesResult {
     alertCount,
     isLoading: alertsLoading,
     source: alertsSource,
+    hasData: alertsHasData,
   } = useAlerts();
 
   const {
@@ -95,6 +98,7 @@ export function useMessages(): UseMessagesResult {
     isLoading: historyLoading,
     source: historySource,
     cacheStatus,
+    hasData: historyHasData,
   } = useAlertHistory();
 
   const messages = useMemo(
@@ -105,11 +109,15 @@ export function useMessages(): UseMessagesResult {
   // Use history source when available, fallback to alerts source
   const source = historySource || alertsSource;
 
+  // Data is available if either alerts or history has data
+  const hasData = alertsHasData || historyHasData;
+
   return {
     messages,
     alertCount,
     isAlertActive: alertCount > 0,
     isLoading: alertsLoading || historyLoading,
+    hasData,
     source,
     cacheStatus,
     alerts,

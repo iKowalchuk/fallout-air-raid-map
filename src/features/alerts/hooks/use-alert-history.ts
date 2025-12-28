@@ -6,6 +6,8 @@ import type { ClientAlertMessage, ClientCacheStatus } from "../schemas";
 export interface UseAlertHistoryResult {
   messages: ClientAlertMessage[];
   isLoading: boolean;
+  /** Whether data exists (from cache or API) */
+  hasData: boolean;
   error: string | null;
   source: "api" | "cache" | null;
   lastUpdate: Date | null;
@@ -20,6 +22,7 @@ export function useAlertHistory(): UseAlertHistoryResult {
   return {
     messages: data?.messages ?? [],
     isLoading,
+    hasData: data !== undefined,
     error: error?.message ?? null,
     source: data?.source ?? null,
     lastUpdate: data?.lastUpdate ?? null,

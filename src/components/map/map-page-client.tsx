@@ -2,16 +2,15 @@
 
 import { DataSourceIndicator } from "@/components/common/data-source-indicator";
 import { ErrorBoundary } from "@/components/common/error-boundary";
-import { MapPageLoader } from "@/components/common/loader";
 import UkraineMap from "@/components/map/ukraine-map";
-import { useAlerts } from "@/features/alerts";
+import { useAlerts, usePrefetchData } from "@/features/alerts";
 
 export default function MapPageClient() {
-  const { alertedRegionIds, isLoading, source } = useAlerts();
+  const { alertedRegionIds, source } = useAlerts();
 
-  if (isLoading) {
-    return <MapPageLoader />;
-  }
+  // Prefetch history data in background to keep cache warm
+  // This prevents loader when navigating to INFO page
+  usePrefetchData();
 
   return (
     <div className="relative flex h-full flex-col">

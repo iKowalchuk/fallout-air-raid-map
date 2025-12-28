@@ -41,6 +41,12 @@ function SyncProgress({ cacheStatus }: { cacheStatus: ClientCacheStatus }) {
   const segments = 20; // Number of visual segments
   const filledSegments = Math.round((cachedRegions / totalRegions) * segments);
 
+  // Display counter starts from 1 (shows which region is currently being synced)
+  // When cachedRegions=0, we're syncing region 1; when cachedRegions=24, we're syncing region 25
+  const displayCount = isComplete
+    ? totalRegions
+    : Math.min(cachedRegions + 1, totalRegions);
+
   return (
     <div
       className={`sync-progress-container font-[family-name:var(--font-pipboy)] ${isComplete ? "sync-complete" : ""}`}
@@ -49,7 +55,7 @@ function SyncProgress({ cacheStatus }: { cacheStatus: ClientCacheStatus }) {
       <div className="sync-text">
         <span>{isComplete ? "SYNC COMPLETE" : "SYNCING REGIONS"}</span>
         <span className="sync-counter">
-          {cachedRegions}/{totalRegions}
+          {displayCount}/{totalRegions}
         </span>
       </div>
       <div className="sync-progress-bar">
