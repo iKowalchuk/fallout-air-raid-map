@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { isRegionAlerted } from "@/data/regions";
 import type { Region } from "@/schemas";
 
 interface MobileRegionDrawerProps {
@@ -27,14 +28,22 @@ export default function MobileRegionDrawer({
   const alertedCount = alertedRegions.length;
   const safeCount = regions.length - alertedCount;
 
-  // Sort regions: alerted first
-  const sortedRegions = [...regions].sort((a, b) => {
-    const aAlerted = alertedRegions.includes(a.id);
-    const bAlerted = alertedRegions.includes(b.id);
-    if (aAlerted && !bAlerted) return -1;
-    if (!aAlerted && bAlerted) return 1;
-    return 0;
-  });
+  // Helper to check if region is alerted (including always-alert territories)
+  const checkRegionAlerted = useCallback(
+    (regionId: string) => isRegionAlerted(regionId, alertedRegions),
+    [alertedRegions],
+  );
+
+  // Sort regions: alerted first (memoized for performance)
+  const sortedRegions = useMemo(() => {
+    return [...regions].sort((a, b) => {
+      const aAlerted = isRegionAlerted(a.id, alertedRegions);
+      const bAlerted = isRegionAlerted(b.id, alertedRegions);
+      if (aAlerted && !bAlerted) return -1;
+      if (!aAlerted && bAlerted) return 1;
+      return 0;
+    });
+  }, [regions, alertedRegions]);
 
   // Close drawer on escape key
   const handleKeyDown = useCallback(
@@ -72,6 +81,20 @@ export default function MobileRegionDrawer({
 
       {/* Drawer container */}
       <div className="relative z-20">
+        {/* Legend - above drawer toggle, hidden when expanded */}
+        <div
+          className={`flex justify-center gap-3 px-2 pb-4 pt-0.5 font-[family-name:var(--font-pipboy)] text-[10px] transition-opacity ${isExpanded ? "pointer-events-none opacity-0" : "opacity-100"}`}
+        >
+          <div className="flex items-center gap-1.5">
+            <div className="legend-safe h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[var(--pipboy-green-dark)]" />
+            <span className="glow-text leading-none">Безпечно</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="legend-alert h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[var(--pipboy-alert-red-dim)]" />
+            <span className="glow-text-red leading-none">Тривога</span>
+          </div>
+        </div>
+
         {/* Collapsed bar / Toggle button */}
         <button
           type="button"
@@ -121,7 +144,7 @@ export default function MobileRegionDrawer({
           <div className="mobile-drawer-content">
             <div className="grid grid-cols-2 gap-1 p-2">
               {sortedRegions.map((region) => {
-                const isAlert = alertedRegions.includes(region.id);
+                const isAlert = checkRegionAlerted(region.id);
                 const isHovered = hoveredRegion === region.id;
                 const isSelected = selectedRegion === region.id;
                 const isHighlighted = isHovered || isSelected;

@@ -368,6 +368,7 @@ body {
   fill: var(--pipboy-green-dim);
   stroke: var(--pipboy-green);
   stroke-width: 3;
+  paint-order: fill stroke;
 }
 
 .region-path-alert {
@@ -393,6 +394,7 @@ body {
   stroke: #ffcc00;
   stroke-width: 3;
   animation: none;
+  paint-order: fill stroke;
 }
 
 @keyframes region-pulse {
@@ -945,6 +947,38 @@ body {
   display: inline-block;
 }
 
+/* Cache indicator */
+.cache-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cache-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pipboy-amber);
+  animation: pulse-amber 2s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes pulse-amber {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow:
+      0 0 4px var(--pipboy-amber),
+      0 0 8px var(--pipboy-amber);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow:
+      0 0 2px var(--pipboy-amber),
+      0 0 4px var(--pipboy-amber);
+  }
+}
+
 /* ===== LOADING SPINNER ===== */
 .loading-container {
   display: flex;
@@ -969,36 +1003,102 @@ body {
 
 /* ===== ENHANCED REGION LIST ===== */
 .region-list-container {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
+  position: relative;
   border-radius: 4px;
-  padding: 4px;
+  padding: 8px 4px;
 }
 
 .region-list-item-enhanced {
-  padding: 4px 8px;
+  position: relative;
+  padding: 6px 10px;
   border-radius: 2px;
   background: transparent;
   border: none;
-  transition: all 0.2s ease;
-  animation: fade-in 0.3s ease-out forwards;
+  transition: transform 0.15s ease;
+  animation: region-fade-in 0.4s ease-out forwards;
+  opacity: 0;
+  overflow: hidden;
 }
 
+/* Scan line effect on hover */
+.region-list-item-enhanced::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 255, 0, 0.15) 50%,
+    transparent 100%
+  );
+  transition: left 0.4s ease;
+  pointer-events: none;
+}
+
+.region-list-item-enhanced:hover::before,
+.region-list-item-enhanced.hovered::before {
+  left: 100%;
+}
+
+.region-list-item-enhanced.alert::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 51, 0, 0.2) 50%,
+    transparent 100%
+  );
+}
+
+/* Hover states */
 .region-list-item-enhanced:hover,
 .region-list-item-enhanced.hovered {
-  background: rgba(0, 255, 0, 0.1);
+  background: rgba(0, 255, 0, 0.08);
+  transform: translateX(2px);
 }
 
 .region-list-item-enhanced.alert:hover,
 .region-list-item-enhanced.alert.hovered {
-  background: rgba(255, 51, 0, 0.15);
+  background: rgba(255, 51, 0, 0.1);
 }
 
+/* Selected state */
+.region-list-item-enhanced.selected {
+  background: rgba(0, 255, 0, 0.12);
+}
+
+.region-list-item-enhanced.selected::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  background: var(--pipboy-green-bright);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--pipboy-green-bright);
+  animation: pulse-green-subtle 1.5s ease-in-out infinite;
+}
+
+.region-list-item-enhanced.alert.selected {
+  background: rgba(255, 51, 0, 0.12);
+}
+
+.region-list-item-enhanced.alert.selected::after {
+  background: var(--pipboy-alert-red);
+  box-shadow: 0 0 6px var(--pipboy-alert-red);
+  animation: pulse-red-subtle 1s ease-in-out infinite;
+}
+
+/* Indicator - matching mobile style */
 .region-indicator-enhanced {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
-  transition: all 0.2s ease;
 }
 
 .region-indicator-enhanced.safe {
@@ -1010,6 +1110,42 @@ body {
   background: var(--pipboy-alert-red);
   box-shadow: 0 0 6px var(--pipboy-alert-red);
   animation: pulse-red 0.8s ease-in-out infinite;
+}
+
+/* Region list specific animations */
+@keyframes region-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-green-subtle {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 6px var(--pipboy-green-bright);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 10px var(--pipboy-green-bright);
+  }
+}
+
+@keyframes pulse-red-subtle {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 6px var(--pipboy-alert-red);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 10px var(--pipboy-alert-red);
+  }
 }
 
 /* ===== MAP CONTAINER ===== */
@@ -1265,6 +1401,11 @@ body {
   border-radius: 4px;
   background: rgba(0, 255, 0, 0.1);
   border: 1px solid var(--pipboy-green-dark);
+}
+
+.status-banner.safe {
+  background: rgba(0, 255, 0, 0.1);
+  border-color: var(--pipboy-green-dark);
 }
 
 .status-banner.alert {
@@ -1655,11 +1796,26 @@ body {
   .status-dot,
   .status-dot-alert,
   .region-indicator-enhanced.alert,
+  .region-indicator-enhanced.safe,
   .mobile-region-indicator.alert,
   .status-indicator,
   .status-indicator.alert,
   .alert-indicator,
   .live-dot {
+    animation: none !important;
+  }
+
+  /* Disable region list animations */
+  .region-list-item-enhanced {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .region-list-item-enhanced::before {
+    display: none !important;
+  }
+
+  .region-list-item-enhanced.selected::after {
     animation: none !important;
   }
 

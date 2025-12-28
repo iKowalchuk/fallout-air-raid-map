@@ -2,7 +2,7 @@
 
 import { type ReactNode, useEffect } from "react";
 import { AppInitializationLoader } from "@/components/common/loader";
-import { useAppInitialization } from "@/features/alerts";
+import { useActiveAlerts, useAlertHistoryQuery } from "@/features/alerts";
 import { useAppInitializationContext } from "@/providers/app-initialization-provider";
 
 interface AppInitializerProps {
@@ -27,8 +27,24 @@ export function AppInitializer({
   requiredData,
 }: AppInitializerProps) {
   const { isInitialized, markAsInitialized } = useAppInitializationContext();
-  const { isInitializing, hasRequiredData } =
-    useAppInitialization(requiredData);
+
+  // Use React Query hooks - they handle reactivity internally
+  const alertsQuery = useActiveAlerts();
+  const historyQuery = useAlertHistoryQuery();
+
+  // Determine loading and data states based on query success
+  const alertsReady = alertsQuery.status === "success";
+  const historyReady = historyQuery.status === "success";
+
+  // Calculate if we have required data based on page needs
+  const hasRequiredData =
+    requiredData === "alerts" ? alertsReady : alertsReady && historyReady;
+
+  // Calculate if we're still loading required data
+  const isLoadingRequired =
+    requiredData === "alerts"
+      ? alertsQuery.isLoading
+      : alertsQuery.isLoading || historyQuery.isLoading;
 
   // Mark as initialized when required data is loaded
   useEffect(() => {
@@ -37,10 +53,8 @@ export function AppInitializer({
     }
   }, [isInitialized, hasRequiredData, markAsInitialized]);
 
-  // Show loader only if:
-  // 1. App has never been initialized (cold start), AND
-  // 2. Required data is currently loading
-  const shouldShowLoader = !isInitialized && isInitializing;
+  // Show loader only on cold start (not initialized yet) AND still loading
+  const shouldShowLoader = !isInitialized && isLoadingRequired;
 
   if (shouldShowLoader) {
     return <AppInitializationLoader />;

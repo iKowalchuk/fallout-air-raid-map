@@ -19,15 +19,18 @@ export function DataSourceIndicator({ source }: DataSourceIndicatorProps) {
 
   // cache mode
   return (
-    <span
+    <output
       className="cache-indicator glow-text"
       style={{ color: "var(--pipboy-amber)" }}
+      aria-label="Дані з кешу - можуть бути застарілими"
+      title="Дані з кешу"
     >
       <span
         className="cache-dot"
         style={{ backgroundColor: "var(--pipboy-amber)" }}
+        aria-hidden="true"
       />{" "}
       CACHE
-    </span>
+    </output>
   );
 }

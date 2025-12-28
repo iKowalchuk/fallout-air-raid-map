@@ -8,9 +8,7 @@ import { alertsQueryKeys } from "./query-keys";
 export function useAlertHistoryQuery() {
   return useQuery({
     queryKey: alertsQueryKeys.history(),
-    queryFn: async () => {
-      return alertsApiClient.getAlertHistory();
-    },
+    queryFn: () => alertsApiClient.getAlertHistory(),
     staleTime: POLLING_CONFIG.HISTORY_STALE_TIME_MS,
     refetchInterval: POLLING_CONFIG.HISTORY_INTERVAL_MS,
     refetchIntervalInBackground: false, // Pause when tab inactive

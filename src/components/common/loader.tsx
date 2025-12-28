@@ -45,10 +45,11 @@ function generateArcPath(
   const startRad = (startAngle * Math.PI) / 180;
   const endRad = (endAngle * Math.PI) / 180;
 
-  const x1 = cx + radius * Math.cos(startRad);
-  const y1 = cy + radius * Math.sin(startRad);
-  const x2 = cx + radius * Math.cos(endRad);
-  const y2 = cy + radius * Math.sin(endRad);
+  // Round to 4 decimal places to avoid hydration mismatches from floating-point precision differences
+  const x1 = Math.round((cx + radius * Math.cos(startRad)) * 10000) / 10000;
+  const y1 = Math.round((cy + radius * Math.sin(startRad)) * 10000) / 10000;
+  const x2 = Math.round((cx + radius * Math.cos(endRad)) * 10000) / 10000;
+  const y2 = Math.round((cy + radius * Math.sin(endRad)) * 10000) / 10000;
 
   const largeArc = segmentAngle > 180 ? 1 : 0;
 
@@ -63,9 +64,10 @@ function polarToCartesian(
   cy: number,
 ): { x: number; y: number } {
   const rad = ((angle - 90) * Math.PI) / 180;
+  // Round to 4 decimal places to avoid hydration mismatches
   return {
-    x: cx + radius * Math.cos(rad),
-    y: cy + radius * Math.sin(rad),
+    x: Math.round((cx + radius * Math.cos(rad)) * 10000) / 10000,
+    y: Math.round((cy + radius * Math.sin(rad)) * 10000) / 10000,
   };
 }
 
@@ -93,10 +95,11 @@ function FalloutLoader({ messages }: { messages: LoadingMessage[] }) {
     return [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(
       (angle) => {
         const rad = (angle * Math.PI) / 180;
-        const x1 = 50 + 38 * Math.cos(rad);
-        const y1 = 50 + 38 * Math.sin(rad);
-        const x2 = 50 + 42 * Math.cos(rad);
-        const y2 = 50 + 42 * Math.sin(rad);
+        // Round to 4 decimal places to avoid hydration mismatches
+        const x1 = Math.round((50 + 38 * Math.cos(rad)) * 10000) / 10000;
+        const y1 = Math.round((50 + 38 * Math.sin(rad)) * 10000) / 10000;
+        const x2 = Math.round((50 + 42 * Math.cos(rad)) * 10000) / 10000;
+        const y2 = Math.round((50 + 42 * Math.sin(rad)) * 10000) / 10000;
         return { angle, x1, y1, x2, y2 };
       },
     );
