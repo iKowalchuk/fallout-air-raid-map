@@ -9,6 +9,10 @@ export const POLLING_CONFIG = {
   // Cache TTL for active alerts (30 seconds)
   ALERTS_CACHE_TTL_MS: 30_000,
 
+  // Stale time for TanStack Query (slightly less than polling interval)
+  ALERTS_STALE_TIME_MS: 25_000,
+  HISTORY_STALE_TIME_MS: 55_000,
+
   // Cache TTL for history (6 hours - history doesn't change often)
   HISTORY_CACHE_TTL_MS: 6 * 60 * 60 * 1000,
 

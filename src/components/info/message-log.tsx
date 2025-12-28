@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import type { CacheStatus } from "@/hooks/use-alert-history";
-import type { ClientAlertMessage } from "@/schemas";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { ClientAlertMessage, ClientCacheStatus } from "@/features/alerts";
+import { useThrottle } from "@/hooks/use-throttle";
 
 function formatTimestamp(date: Date): string {
   return date.toLocaleTimeString("uk-UA", {
@@ -14,7 +14,7 @@ function formatTimestamp(date: Date): string {
 
 interface MessageLogProps {
   messages: ClientAlertMessage[];
-  cacheStatus?: CacheStatus | null;
+  cacheStatus?: ClientCacheStatus | null;
 }
 
 // Stylized message counter component in Pip-Boy style
@@ -36,10 +36,16 @@ function MessageCounter({ count }: { count: number }) {
 }
 
 // Sync progress indicator component
-function SyncProgress({ cacheStatus }: { cacheStatus: CacheStatus }) {
+function SyncProgress({ cacheStatus }: { cacheStatus: ClientCacheStatus }) {
   const { cachedRegions, totalRegions, isComplete } = cacheStatus;
   const segments = 20; // Number of visual segments
   const filledSegments = Math.round((cachedRegions / totalRegions) * segments);
+
+  // Display counter starts from 1 (shows which region is currently being synced)
+  // When cachedRegions=0, we're syncing region 1; when cachedRegions=24, we're syncing region 25
+  const displayCount = isComplete
+    ? totalRegions
+    : Math.min(cachedRegions + 1, totalRegions);
 
   return (
     <div
@@ -49,7 +55,7 @@ function SyncProgress({ cacheStatus }: { cacheStatus: CacheStatus }) {
       <div className="sync-text">
         <span>{isComplete ? "SYNC COMPLETE" : "SYNCING REGIONS"}</span>
         <span className="sync-counter">
-          {cachedRegions}/{totalRegions}
+          {displayCount}/{totalRegions}
         </span>
       </div>
       <div className="sync-progress-bar">
@@ -73,21 +79,24 @@ function SyncProgress({ cacheStatus }: { cacheStatus: CacheStatus }) {
   );
 }
 
-// Get icon based on message type
-function getMessageIcon(type: ClientAlertMessage["type"]): string {
+// Get icon and accessible label based on message type
+function getMessageIcon(type: ClientAlertMessage["type"]): {
+  icon: string;
+  label: string;
+} {
   switch (type) {
     case "alert_start":
-      return "⚠";
+      return { icon: "⚠", label: "Тривога" };
     case "alert_end":
-      return "✓";
+      return { icon: "✓", label: "Відбій" };
     case "missile_detected":
-      return "⚠";
+      return { icon: "⚠", label: "Ракета" };
     case "uav_detected":
-      return "⚠";
+      return { icon: "⚠", label: "БПЛА" };
     case "info":
-      return "●";
+      return { icon: "●", label: "Інформація" };
     default:
-      return "●";
+      return { icon: "●", label: "Повідомлення" };
   }
 }
 
@@ -126,27 +135,38 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAtTop, setIsAtTop] = useState(true);
   const prevMessagesLength = useRef(messages.length);
+  const [newMessageCount, setNewMessageCount] = useState(0);
 
   // Messages are already sorted by API (newest first)
 
-  // Auto-scroll to top when new messages arrive
+  // Auto-scroll to top when new messages arrive and track new messages
   useEffect(() => {
-    if (
-      isAtTop &&
-      scrollRef.current &&
-      messages.length > prevMessagesLength.current
-    ) {
-      scrollRef.current.scrollTop = 0;
+    const newCount = messages.length - prevMessagesLength.current;
+    if (newCount > 0) {
+      if (isAtTop && scrollRef.current) {
+        scrollRef.current.scrollTop = 0;
+      } else {
+        setNewMessageCount((prev) => prev + newCount);
+      }
     }
     prevMessagesLength.current = messages.length;
   }, [messages, isAtTop]);
 
-  // Detect manual scroll to disable auto-scroll
-  const handleScroll = () => {
+  // Throttled scroll handler for performance (100ms = ~10fps instead of every pixel)
+  const handleScrollInternal = useCallback(() => {
     if (!scrollRef.current) return;
     const { scrollTop } = scrollRef.current;
-    setIsAtTop(scrollTop < 50);
-  };
+    const wasAtTop = isAtTop;
+    const nowAtTop = scrollTop < 50;
+    setIsAtTop(nowAtTop);
+
+    // Clear new message count when scrolling to top
+    if (nowAtTop && !wasAtTop) {
+      setNewMessageCount(0);
+    }
+  }, [isAtTop]);
+
+  const handleScroll = useThrottle(handleScrollInternal, 100);
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
@@ -159,13 +179,13 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
       <div className="mt-1 mb-1 sm:mt-3 sm:mb-2">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center sm:justify-start">
-            <span className="glow-text font-[family-name:var(--font-pipboy)] text-[9px] opacity-70 sm:text-xs">
+            <span className="glow-text font-[family-name:var(--font-pipboy)] text-[10px] opacity-70 sm:text-xs">
               ▸ MESSAGE LOG
             </span>
           </div>
           <div className="flex w-full items-center justify-between gap-1.5 sm:w-auto sm:gap-5">
             {/* Compact inline legend - matching TimelineBar style */}
-            <div className="flex flex-wrap items-center gap-1.5 font-[family-name:var(--font-pipboy)] text-[8px] sm:gap-4 sm:text-[10px]">
+            <div className="flex flex-wrap items-center gap-1.5 font-[family-name:var(--font-pipboy)] text-[10px] sm:gap-4 sm:text-xs">
               <div className="flex items-center gap-1" title="Ракетна загроза">
                 <span
                   className="inline-block h-2.5 w-[3px] rounded-sm sm:h-3"
@@ -228,86 +248,113 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
         <div
           ref={scrollRef}
           onScroll={handleScroll}
+          role="log"
+          aria-label="Журнал повідомлень про тривоги"
+          aria-live="polite"
+          aria-atomic="false"
           className="message-log-container absolute inset-0 overflow-y-auto font-[family-name:var(--font-pipboy)]"
         >
-          <div className="space-y-0.5">
-            {messages.map((msg, index) => {
-              const threatLevel = getThreatLevel(msg.type);
-              const icon = getMessageIcon(msg.type);
-              const isNew = index < 3;
+          {messages.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center gap-3 p-4">
+              <pre className="glow-text text-center font-mono text-[10px] opacity-60 sm:text-xs">
+                {`╔═══════════════════╗
+║    VAULT-TEC      ║
+║     SECURE        ║
+╚═══════════════════╝`}
+              </pre>
+              <span className="glow-text text-center text-xs opacity-50 sm:text-sm">
+                Немає активних повідомлень.
+                <br />
+                <span className="text-pipboy-green-dim">
+                  Залишайтеся в безпеці.
+                </span>
+              </span>
+            </div>
+          ) : (
+            <div className="space-y-0.5">
+              {messages.map((msg, index) => {
+                const threatLevel = getThreatLevel(msg.type);
+                const { icon, label: iconLabel } = getMessageIcon(msg.type);
+                const isNew = index < 3;
 
-              return (
-                <div
-                  key={msg.id}
-                  className={`message-log-entry-enhanced ${
-                    threatLevel === "high"
-                      ? "message-high"
-                      : threatLevel === "medium"
-                        ? "message-medium"
-                        : threatLevel === "clear"
-                          ? "message-clear"
-                          : ""
-                  } ${isNew ? "message-new" : ""}`}
-                  style={{ animationDelay: `${(index % 5) * 0.05}s` }}
-                >
-                  {/* Threat indicator bar with tooltip */}
+                return (
                   <div
-                    className={`message-threat-bar threat-${threatLevel}`}
-                    title={getThreatLabel(threatLevel)}
-                  />
-
-                  {/* Icon - hidden on very small screens */}
-                  <span
-                    className={`message-icon xs:inline hidden sm:inline ${
-                      threatLevel === "high" || threatLevel === "medium"
-                        ? "glow-text-red"
-                        : threatLevel === "clear"
-                          ? "glow-text-bright"
-                          : "glow-text"
-                    }`}
+                    key={msg.id}
+                    className={`message-log-entry-enhanced ${
+                      threatLevel === "high"
+                        ? "message-high"
+                        : threatLevel === "medium"
+                          ? "message-medium"
+                          : threatLevel === "clear"
+                            ? "message-clear"
+                            : ""
+                    } ${isNew ? "message-new" : ""}`}
+                    style={{ animationDelay: `${(index % 5) * 0.05}s` }}
                   >
-                    {icon}
-                  </span>
+                    {/* Threat indicator bar with tooltip */}
+                    <div
+                      className={`message-threat-bar threat-${threatLevel}`}
+                      title={getThreatLabel(threatLevel)}
+                      aria-hidden="true"
+                    />
 
-                  {/* Timestamp */}
-                  <span className="message-log-timestamp text-[10px] opacity-60 sm:text-xs">
-                    {formatTimestamp(msg.timestamp)}
-                  </span>
+                    {/* Icon with accessible label - hidden on very small screens */}
+                    <span
+                      className={`message-icon xs:inline hidden sm:inline ${
+                        threatLevel === "high" || threatLevel === "medium"
+                          ? "glow-text-red"
+                          : threatLevel === "clear"
+                            ? "glow-text-bright"
+                            : "glow-text"
+                      }`}
+                      aria-label={iconLabel}
+                      role="img"
+                    >
+                      {icon}
+                    </span>
 
-                  {/* Region name */}
-                  <span
-                    className={`message-region truncate text-[10px] font-medium sm:text-xs sm:whitespace-nowrap ${
-                      msg.type === "alert_start" ||
-                      msg.type === "missile_detected"
-                        ? "glow-text-red-bright"
-                        : msg.type === "alert_end"
-                          ? "glow-text-bright"
-                          : "glow-text"
-                    }`}
-                  >
-                    {msg.regionName}
-                  </span>
+                    {/* Timestamp */}
+                    <span className="message-log-timestamp text-[10px] opacity-60 sm:text-xs">
+                      <time dateTime={msg.timestamp.toISOString()}>
+                        {formatTimestamp(msg.timestamp)}
+                      </time>
+                    </span>
 
-                  {/* Message text */}
-                  <span
-                    className={`message-text min-w-0 flex-1 truncate text-[10px] sm:text-xs ${
-                      msg.type === "alert_start" ||
-                      msg.type === "missile_detected"
-                        ? "text-[var(--pipboy-alert-red)] opacity-90"
-                        : msg.type === "alert_end"
-                          ? "text-[var(--pipboy-green-bright)] opacity-90"
-                          : "glow-text opacity-70"
-                    }`}
-                  >
-                    {msg.message}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+                    {/* Region name */}
+                    <span
+                      className={`message-region truncate text-[10px] font-medium sm:text-xs sm:whitespace-nowrap ${
+                        msg.type === "alert_start" ||
+                        msg.type === "missile_detected"
+                          ? "glow-text-red-bright"
+                          : msg.type === "alert_end"
+                            ? "glow-text-bright"
+                            : "glow-text"
+                      }`}
+                    >
+                      {msg.regionName}
+                    </span>
+
+                    {/* Message text */}
+                    <span
+                      className={`message-text min-w-0 flex-1 truncate text-[10px] sm:text-xs ${
+                        msg.type === "alert_start" ||
+                        msg.type === "missile_detected"
+                          ? "text-[var(--pipboy-alert-red)] opacity-90"
+                          : msg.type === "alert_end"
+                            ? "text-[var(--pipboy-green-bright)] opacity-90"
+                            : "glow-text opacity-70"
+                      }`}
+                    >
+                      {msg.message}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Scroll to top button - positioned inside message container */}
+        {/* Scroll to top button - shows actual new message count */}
         {!isAtTop && (
           <button
             type="button"
@@ -317,13 +364,22 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
                   top: 0,
                   behavior: "smooth",
                 });
-                // Don't set isAtTop here - let handleScroll detect when we reach the top
+                setNewMessageCount(0);
               }
             }}
             className="scroll-to-top-btn"
+            aria-label={
+              newMessageCount > 0
+                ? `Прокрутити вгору, ${newMessageCount} нових повідомлень`
+                : "Прокрутити вгору"
+            }
           >
-            <span className="scroll-btn-icon">▲</span>
-            <span>Нові повідомлення</span>
+            <span className="scroll-btn-icon" aria-hidden="true">
+              ▲
+            </span>
+            <span>
+              {newMessageCount > 0 ? `${newMessageCount} нових` : "До початку"}
+            </span>
           </button>
         )}
       </div>

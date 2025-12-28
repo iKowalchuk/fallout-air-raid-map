@@ -51,22 +51,25 @@ export default function Header({ activeTab, alertCount = 0 }: HeaderProps) {
           VAULT-TEC UA
         </h1>
 
-        {/* Info row: Clock, Date, War Day */}
-        <div className="flex items-center gap-2 font-[family-name:var(--font-pipboy)] text-[9px] sm:gap-4 sm:text-xs md:gap-6 md:text-sm">
-          {/* Live Clock */}
+        {/* Info row: Clock, Date, War Day - improved mobile font sizes */}
+        <div className="flex items-center gap-2 font-[family-name:var(--font-pipboy)] text-[10px] sm:gap-4 sm:text-xs md:gap-6 md:text-sm">
+          {/* Live Clock - using semantic time element */}
           <div className="flex items-center gap-1 sm:gap-2">
             <span className="glow-text opacity-70">TIME:</span>
-            <span className="glow-text-bright min-w-[55px] font-mono tracking-widest sm:min-w-[70px]">
+            <time
+              dateTime={time?.toISOString()}
+              className="glow-text-bright min-w-[55px] font-mono text-[11px] tracking-widest sm:min-w-[70px] sm:text-xs"
+            >
               {time ? formatTime(time) : "--:--:--"}
-            </span>
+            </time>
           </div>
 
-          {/* Date */}
+          {/* Date - using semantic time element */}
           <div className="hidden items-center gap-2 sm:flex">
             <span className="glow-text opacity-70">DATE:</span>
-            <span className="glow-text">
+            <time dateTime={time?.toISOString()} className="glow-text">
               {time ? formatDate(time) : "--.--.----"}
-            </span>
+            </time>
           </div>
 
           {/* War Day Counter */}
@@ -77,14 +80,17 @@ export default function Header({ activeTab, alertCount = 0 }: HeaderProps) {
             </span>
           </div>
 
-          {/* Alert Counter */}
+          {/* Alert Counter - using output element for semantic status */}
           {alertCount > 0 && (
-            <div className="alert-counter hidden items-center gap-2 sm:flex">
-              <div className="alert-indicator" />
+            <output
+              className="alert-counter hidden items-center gap-2 sm:flex"
+              aria-live="polite"
+            >
+              <div className="alert-indicator" aria-hidden="true" />
               <span className="glow-text-red-bright">
                 {alertCount} {alertCount === 1 ? "REGION" : "REGIONS"}
               </span>
-            </div>
+            </output>
           )}
         </div>
       </div>

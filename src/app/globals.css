@@ -1219,8 +1219,11 @@ body {
 }
 
 .close-btn {
-  width: 24px;
-  height: 24px;
+  /* Minimum 44x44px for touch accessibility */
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1228,14 +1231,30 @@ body {
   border: 1px solid var(--pipboy-green-dark);
   border-radius: 4px;
   color: var(--pipboy-green);
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
   transition: all 0.2s ease;
+  /* Ensure touch target even if visually smaller */
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (min-width: 640px) {
+  .close-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 18px;
+  }
 }
 
 .close-btn:hover {
   background: var(--pipboy-green-dark);
   border-color: var(--pipboy-green);
+}
+
+.close-btn:active {
+  transform: scale(0.95);
 }
 
 .status-banner {
@@ -1617,5 +1636,543 @@ body {
     color: var(--pipboy-green);
     text-shadow: 0 0 6px var(--pipboy-green);
     transform: scale(1);
+  }
+}
+
+/* ===== ACCESSIBILITY: REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable CRT effects */
+  .crt-overlay::before,
+  .crt-overlay::after {
+    animation: none !important;
+  }
+
+  .pipboy-screen {
+    animation: none !important;
+  }
+
+  /* Disable pulsing indicators */
+  .status-dot,
+  .status-dot-alert,
+  .region-indicator-enhanced.alert,
+  .mobile-region-indicator.alert,
+  .status-indicator,
+  .status-indicator.alert,
+  .alert-indicator,
+  .live-dot {
+    animation: none !important;
+  }
+
+  /* Disable map region pulsing */
+  .region-path-alert {
+    animation: none !important;
+  }
+
+  /* Disable scanning effects */
+  .timeline-scanline,
+  .radar-overlay,
+  .sync-progress-scanline,
+  .counter-scanline,
+  .modal-scanline {
+    animation: none !important;
+    display: none;
+  }
+
+  /* Disable loading spinner rotation - show static */
+  .loading-spinner {
+    animation: none !important;
+    border-top-color: var(--pipboy-green);
+  }
+
+  /* Disable glow pulsing */
+  .radiation-symbol,
+  .alert-counter {
+    animation: none !important;
+  }
+
+  /* Disable scroll button bounce */
+  .scroll-btn-icon {
+    animation: none !important;
+  }
+
+  /* Disable pulse rings */
+  .pulse-ring {
+    animation: none !important;
+    display: none;
+  }
+
+  /* Disable segment pulsing */
+  .sync-segment.active {
+    animation: none !important;
+  }
+
+  /* Reduce all transitions to instant */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ===== REDESIGNED FALLOUT LOADER - THREAT DETECTION TERMINAL ===== */
+.fallout-loader {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    ellipse at center,
+    #081208 0%,
+    #040804 50%,
+    #020402 100%
+  );
+  overflow: hidden;
+}
+
+.fallout-loader-complete {
+  animation: fallout-completion-flash 0.8s ease-out;
+}
+
+@keyframes fallout-completion-flash {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  30% {
+    filter: brightness(1.4);
+  }
+}
+
+/* Scanlines */
+.fallout-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.12) 2px,
+    rgba(0, 0, 0, 0.12) 4px
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* CRT Glitch Effect */
+.fallout-crt-glitch {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 12;
+  animation: fallout-crt-glitch 6s steps(1) infinite;
+  background: linear-gradient(
+    transparent 0%,
+    rgba(0, 255, 0, 0.02) 50%,
+    transparent 51%,
+    transparent 100%
+  );
+}
+
+@keyframes fallout-crt-glitch {
+  0%,
+  94%,
+  100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  95% {
+    opacity: 1;
+    transform: translateX(-3px) skewX(-0.5deg);
+  }
+  96% {
+    transform: translateX(3px) skewX(0.5deg);
+  }
+  97% {
+    transform: translateX(-1px);
+    opacity: 0;
+  }
+}
+
+/* Content */
+.fallout-loader-content {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 32px;
+}
+
+/* Radar container - LARGER */
+.fallout-radar-container {
+  position: relative;
+  width: 160px;
+  height: 160px;
+}
+
+@media (min-width: 640px) {
+  .fallout-radar-container {
+    width: 180px;
+    height: 180px;
+  }
+}
+
+/* Main radar SVG */
+.fallout-radar {
+  width: 100%;
+  height: 100%;
+  color: var(--pipboy-green);
+  filter: drop-shadow(0 0 12px var(--pipboy-green));
+  animation: fallout-radar-glow 3s ease-in-out infinite;
+}
+
+@keyframes fallout-radar-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 12px var(--pipboy-green));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px var(--pipboy-green-bright))
+      drop-shadow(0 0 30px rgba(0, 255, 0, 0.4));
+  }
+}
+
+/* ===== PROGRESS RING SEGMENTS ===== */
+.fallout-progress-segment {
+  fill: none;
+  stroke: var(--pipboy-green-dark);
+  stroke-width: 3;
+  opacity: 0.2;
+  transition: all 0.3s ease;
+}
+
+.fallout-progress-segment-active {
+  stroke: var(--pipboy-green);
+  opacity: 1;
+  filter: drop-shadow(0 0 4px var(--pipboy-green));
+}
+
+.fallout-progress-segment-current {
+  animation: fallout-segment-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes fallout-segment-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    stroke: var(--pipboy-green);
+  }
+  50% {
+    opacity: 1;
+    stroke: var(--pipboy-green-bright);
+  }
+}
+
+/* ===== RADAR RINGS ===== */
+.fallout-radar-ring {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  opacity: 0.25;
+}
+
+.fallout-radar-ring-outer {
+  stroke-width: 1.5;
+  opacity: 0.35;
+}
+
+/* Crosshairs */
+.fallout-radar-crosshair {
+  stroke: currentColor;
+  stroke-width: 0.8;
+  opacity: 0.2;
+}
+
+.fallout-radar-crosshair-diagonal {
+  stroke: currentColor;
+  stroke-width: 0.5;
+  opacity: 0.1;
+}
+
+/* Tick marks */
+.fallout-radar-tick {
+  stroke: currentColor;
+  stroke-width: 1.5;
+  opacity: 0.4;
+}
+
+/* ===== SCAN LINE & SWEEP ===== */
+.fallout-radar-scan-line {
+  stroke: var(--pipboy-green-bright);
+  stroke-width: 2;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px var(--pipboy-green-bright));
+}
+
+.fallout-radar-sweep {
+  opacity: 0.6;
+}
+
+.fallout-radar-scan-group {
+  transform-origin: 50px 50px;
+  animation: fallout-radar-scan var(--scan-duration, 3s) linear infinite;
+}
+
+@keyframes fallout-radar-scan {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== RADAR BLIPS ===== */
+.fallout-radar-blip-ring {
+  fill: none;
+  stroke: var(--pipboy-green-dark);
+  stroke-width: 1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.fallout-radar-blip-ring-active {
+  opacity: 0.4;
+  animation: fallout-blip-ring-pulse 1.5s ease-in-out infinite;
+}
+
+.fallout-radar-blip {
+  fill: var(--pipboy-green-dark);
+  opacity: 0;
+  transition: all 0.4s ease;
+}
+
+.fallout-radar-blip-active {
+  fill: var(--pipboy-green-bright);
+  opacity: 1;
+  filter: drop-shadow(0 0 4px var(--pipboy-green-bright))
+    drop-shadow(0 0 8px var(--pipboy-green));
+  animation: fallout-blip-glow 1.2s ease-in-out infinite;
+}
+
+@keyframes fallout-blip-ring-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    stroke-width: 1;
+  }
+  50% {
+    opacity: 0.6;
+    stroke-width: 1.5;
+  }
+}
+
+@keyframes fallout-blip-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px var(--pipboy-green-bright))
+      drop-shadow(0 0 8px var(--pipboy-green));
+  }
+  50% {
+    filter: drop-shadow(0 0 6px var(--pipboy-green-bright))
+      drop-shadow(0 0 12px var(--pipboy-green))
+      drop-shadow(0 0 16px rgba(0, 255, 0, 0.4));
+  }
+}
+
+/* ===== CENTER DOT ===== */
+.fallout-radar-center {
+  fill: var(--pipboy-green);
+  opacity: 0.7;
+  filter: drop-shadow(0 0 4px var(--pipboy-green));
+}
+
+/* ===== PULSE RINGS ===== */
+.fallout-pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80px;
+  height: 80px;
+  border: 1px solid var(--pipboy-green);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: fallout-pulse-expand 3s ease-out infinite;
+}
+
+.fallout-pulse-2 {
+  animation-delay: 1.5s;
+}
+
+@keyframes fallout-pulse-expand {
+  0% {
+    width: 80px;
+    height: 80px;
+    opacity: 0.5;
+  }
+  100% {
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+  }
+}
+
+/* ===== STATUS TEXT ===== */
+.fallout-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-pipboy), monospace;
+  text-align: center;
+  gap: 6px;
+}
+
+.fallout-status-stage {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  color: var(--pipboy-green);
+  text-shadow:
+    0 0 8px var(--pipboy-green),
+    0 0 16px rgba(0, 255, 0, 0.3);
+  text-transform: uppercase;
+}
+
+.fallout-status-detail {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--pipboy-green-dim);
+  text-shadow: 0 0 4px var(--pipboy-green-dim);
+  opacity: 0.9;
+  min-height: 16px;
+}
+
+/* ===== TERMINAL FOOTER ===== */
+.fallout-terminal-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-pipboy), monospace;
+  margin-top: 8px;
+}
+
+.fallout-terminal-line {
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--pipboy-green-dark) 50%,
+    transparent 100%
+  );
+  opacity: 0.5;
+}
+
+.fallout-terminal-text {
+  font-size: 8px;
+  letter-spacing: 0.35em;
+  color: var(--pipboy-green-dark);
+  text-transform: uppercase;
+}
+
+/* ===== BORDER FRAME ===== */
+.fallout-border-frame {
+  position: absolute;
+  inset: 10px;
+  border: 1px solid var(--pipboy-green-dark);
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.fallout-border-corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--pipboy-green-dim);
+  border-style: solid;
+  border-width: 0;
+}
+
+.fallout-border-corner-tl {
+  top: -1px;
+  left: -1px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+}
+
+.fallout-border-corner-tr {
+  top: -1px;
+  right: -1px;
+  border-top-width: 2px;
+  border-right-width: 2px;
+}
+
+.fallout-border-corner-bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom-width: 2px;
+  border-left-width: 2px;
+}
+
+.fallout-border-corner-br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+}
+
+/* ===== VIGNETTE ===== */
+.fallout-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  pointer-events: none;
+  z-index: 8;
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  .fallout-loader-complete,
+  .fallout-radar,
+  .fallout-crt-glitch {
+    animation: none !important;
+  }
+
+  .fallout-radar {
+    filter: drop-shadow(0 0 12px var(--pipboy-green));
+  }
+
+  .fallout-radar-scan-group {
+    animation: none !important;
+    transform: rotate(45deg);
+  }
+
+  .fallout-progress-segment-current {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .fallout-radar-blip-active,
+  .fallout-radar-blip-ring-active {
+    animation: none !important;
+  }
+
+  .fallout-pulse-ring {
+    animation: none !important;
+    display: none;
   }
 }

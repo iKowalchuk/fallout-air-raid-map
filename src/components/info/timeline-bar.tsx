@@ -13,6 +13,18 @@ interface TimelineBarProps {
   messages: AlertMessage[];
 }
 
+// Pre-computed constants to avoid re-allocation on every render
+const GRID_LINES = Array.from({ length: 24 }, (_, i) => i);
+const HOUR_LABELS = [
+  "00:00",
+  "04:00",
+  "08:00",
+  "12:00",
+  "16:00",
+  "20:00",
+  "24:00",
+];
+
 export default function TimelineBar({ messages }: TimelineBarProps) {
   const [currentPosition, setCurrentPosition] = useState(0);
   const [hoveredPeriod, setHoveredPeriod] = useState<TimelinePeriod | null>(
@@ -22,12 +34,6 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>(
     undefined,
   );
-
-  // Generate time labels for the timeline (last 24 hours)
-  const hours = [];
-  for (let i = 0; i <= 24; i += 4) {
-    hours.push(`${i.toString().padStart(2, "0")}:00`);
-  }
 
   useEffect(() => {
     const updatePosition = () => {
@@ -52,37 +58,37 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
     <div className="mt-1 border-t border-[var(--pipboy-green-dark)] pt-1 sm:mt-4 sm:pt-3">
       {/* Timeline header */}
       <div className="mb-0.5 sm:mb-2">
-        <span className="glow-text font-[family-name:var(--font-pipboy)] text-[9px] opacity-70 sm:text-xs">
+        <span className="glow-text font-[family-name:var(--font-pipboy)] text-[10px] opacity-70 sm:text-xs">
           ▸ TODAY&apos;S TIMELINE
         </span>
       </div>
 
       <div className="relative">
         {/* Timeline background */}
-        <div className="timeline-bar-enhanced relative h-5 overflow-hidden rounded sm:h-7 md:h-6">
-          {/* Grid lines */}
-          {Array.from({ length: 24 }, (_, i) => ({
-            id: `grid-${i}`,
-            position: i,
-          })).map((line) => (
+        <section
+          className="timeline-bar-enhanced relative h-5 overflow-hidden rounded sm:h-7 md:h-6"
+          aria-label="Часова шкала тривог за сьогодні"
+        >
+          {/* Grid lines - using pre-computed constant */}
+          {GRID_LINES.map((position) => (
             <div
-              key={line.id}
+              key={`grid-${position}`}
               className="absolute top-0 bottom-0 w-px bg-[var(--pipboy-green-dark)] opacity-30"
-              style={{ left: `${(line.position / 24) * 100}%` }}
+              style={{ left: `${(position / 24) * 100}%` }}
+              aria-hidden="true"
             />
           ))}
 
           {/* Alert periods - render active (red) first, then inactive (green) on top */}
+          {/* Using semantic button elements for accessibility */}
           {alertPeriods
             .filter((p) => p.isActive)
             .map((period) => (
-              // biome-ignore lint/a11y/useSemanticElements: Cannot use button element inside positioned timeline
-              <div
+              <button
+                type="button"
                 key={`active-${period.regionName}-${period.start}`}
-                role="button"
-                tabIndex={0}
                 aria-label={`Активна тривога: ${period.regionName}`}
-                className={`alert-period-active absolute top-1 bottom-1 cursor-pointer rounded-sm transition-all duration-200 ${hoveredPeriod === period ? "scale-y-110 opacity-100" : "opacity-80"}`}
+                className={`alert-period-active absolute top-1 bottom-1 cursor-pointer rounded-sm border-0 p-0 transition-all duration-200 ${hoveredPeriod === period ? "scale-y-110 opacity-100" : "opacity-80"}`}
                 style={{
                   left: `${period.start}%`,
                   width: `${Math.max(period.end - period.start, 0.5)}%`,
@@ -92,26 +98,17 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
                 onClick={() => {
                   setSelectedRegion(period.regionName);
                   setIsModalOpen(true);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setSelectedRegion(period.regionName);
-                    setIsModalOpen(true);
-                  }
                 }}
               />
             ))}
           {alertPeriods
             .filter((p) => !p.isActive)
             .map((period) => (
-              // biome-ignore lint/a11y/useSemanticElements: Cannot use button element inside positioned timeline
-              <div
+              <button
+                type="button"
                 key={`inactive-${period.regionName}-${period.start}`}
-                role="button"
-                tabIndex={0}
                 aria-label={`Завершена тривога: ${period.regionName}`}
-                className={`alert-period absolute top-1 bottom-1 cursor-pointer rounded-sm transition-all duration-200 ${hoveredPeriod === period ? "scale-y-110 opacity-100" : "opacity-80"}`}
+                className={`alert-period absolute top-1 bottom-1 cursor-pointer rounded-sm border-0 p-0 transition-all duration-200 ${hoveredPeriod === period ? "scale-y-110 opacity-100" : "opacity-80"}`}
                 style={{
                   left: `${period.start}%`,
                   width: `${Math.max(period.end - period.start, 0.5)}%`,
@@ -121,13 +118,6 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
                 onClick={() => {
                   setSelectedRegion(period.regionName);
                   setIsModalOpen(true);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setSelectedRegion(period.regionName);
-                    setIsModalOpen(true);
-                  }
                 }}
               />
             ))}
@@ -142,11 +132,11 @@ export default function TimelineBar({ messages }: TimelineBarProps) {
 
           {/* Scan line effect */}
           <div className="timeline-scanline" />
-        </div>
+        </section>
 
-        {/* Time labels */}
+        {/* Time labels - using pre-computed constant */}
         <div className="glow-text mt-0.5 flex justify-between font-[family-name:var(--font-pipboy)] text-[8px] sm:mt-1 sm:text-[10px] md:text-xs">
-          {hours.map((hour) => (
+          {HOUR_LABELS.map((hour) => (
             <span key={hour} className="opacity-70">
               {hour}
             </span>

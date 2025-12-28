@@ -3,20 +3,14 @@
 import { DataSourceIndicator } from "@/components/common/data-source-indicator";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import UkraineMap from "@/components/map/ukraine-map";
-import { useAlerts } from "@/hooks/use-alerts";
+import { useAlerts, usePrefetchData } from "@/features/alerts";
 
 export default function MapPageClient() {
-  const { alertedRegionIds, isLoading, source } = useAlerts();
+  const { alertedRegionIds, source } = useAlerts();
 
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <span className="glow-text animate-pulse font-[family-name:var(--font-pipboy)] text-lg">
-          ЗАВАНТАЖЕННЯ ДАНИХ...
-        </span>
-      </div>
-    );
-  }
+  // Prefetch history data in background to keep cache warm
+  // This prevents loader when navigating to INFO page
+  usePrefetchData();
 
   return (
     <div className="relative flex h-full flex-col">

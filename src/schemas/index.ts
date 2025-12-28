@@ -1,7 +1,3 @@
-// Re-export everything from schema modules
+// Shared schemas used across multiple features (not tied to alerts feature)
 
-export * from "./alerts-api";
-export * from "./alerts-internal";
-export * from "./common";
-export * from "./helpers";
 export * from "./region";
