@@ -368,6 +368,7 @@ body {
   fill: var(--pipboy-green-dim);
   stroke: var(--pipboy-green);
   stroke-width: 3;
+  paint-order: fill stroke;
 }
 
 .region-path-alert {
@@ -393,6 +394,7 @@ body {
   stroke: #ffcc00;
   stroke-width: 3;
   animation: none;
+  paint-order: fill stroke;
 }
 
 @keyframes region-pulse {

@@ -72,6 +72,20 @@ export default function MobileRegionDrawer({
 
       {/* Drawer container */}
       <div className="relative z-20">
+        {/* Legend - above drawer toggle, hidden when expanded */}
+        <div
+          className={`flex justify-center gap-3 px-2 pb-4 pt-0.5 font-[family-name:var(--font-pipboy)] text-[10px] transition-opacity ${isExpanded ? "pointer-events-none opacity-0" : "opacity-100"}`}
+        >
+          <div className="flex items-center gap-1.5">
+            <div className="legend-safe h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[var(--pipboy-green-dark)]" />
+            <span className="glow-text leading-none">Безпечно</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="legend-alert h-2.5 w-2.5 shrink-0 rounded-[2px] bg-[var(--pipboy-alert-red-dim)]" />
+            <span className="glow-text-red leading-none">Тривога</span>
+          </div>
+        </div>
+
         {/* Collapsed bar / Toggle button */}
         <button
           type="button"

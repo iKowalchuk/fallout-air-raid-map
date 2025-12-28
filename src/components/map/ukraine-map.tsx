@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import UkraineMapSVG from "@/assets/ukraine-map";
 import {
   getAllRegions,
   getLeftRegions,
   getRegionById,
   getRightRegions,
 } from "@/data/regions";
+import { UkraineMapGeoJSON } from "@/features/map";
 import MobileRegionDrawer from "./mobile-region-drawer";
 import RegionInfoPanel from "./region-info-panel";
 import RegionList from "./region-list";
@@ -29,6 +29,12 @@ export default function UkraineMap({ alertedRegions }: UkraineMapProps) {
     ? getRegionById(selectedRegion)
     : null;
 
+  const hoveredRegionData = hoveredRegion ? getRegionById(hoveredRegion) : null;
+
+  // Region to display in header: hovered takes priority over selected
+  const displayRegionData = hoveredRegionData || selectedRegionData;
+  const displayRegionId = hoveredRegion || selectedRegion;
+
   // Show modal only when region is selected AND drawer is closed
   const showRegionPanel = selectedRegionData && !isDrawerExpanded;
 
@@ -42,28 +48,29 @@ export default function UkraineMap({ alertedRegions }: UkraineMapProps) {
 
   return (
     <div className="relative flex h-full flex-col">
-      {/* Region name tooltip - shows selected region */}
+      {/* Region name tooltip - shows hovered or selected region */}
       <div className="mt-2 mb-1 flex h-6 items-center justify-center sm:mt-0 sm:mb-2 sm:h-8">
-        {/* Show selected region name */}
-        {selectedRegionData && (
+        {/* Show region name on hover or selection */}
+        {displayRegionData && displayRegionId && (
           <span
+            key={displayRegionId}
             className={`animate-fade-in font-[family-name:var(--font-pipboy)] text-sm sm:text-lg ${
-              alertedRegions.includes(selectedRegionData.id)
+              alertedRegions.includes(displayRegionData.id)
                 ? "glow-text-red-bright"
                 : "glow-text-bright"
             }`}
           >
-            {selectedRegionData.nameUa} / {selectedRegionData.nameEn}
+            {displayRegionData.nameUa} / {displayRegionData.nameEn}
           </span>
         )}
         {/* Placeholder text - different for mobile (touch) vs desktop (hover) */}
-        {!selectedRegionData && (
+        {!displayRegionData && (
           <>
             <span className="glow-text block font-[family-name:var(--font-pipboy)] text-xs opacity-50 sm:hidden">
               Натисніть на регіон для інформації
             </span>
             <span className="glow-text hidden font-[family-name:var(--font-pipboy)] text-sm opacity-50 sm:block">
-              Натисніть на регіон для інформації
+              Наведіть на регіон для інформації
             </span>
           </>
         )}
@@ -88,7 +95,7 @@ export default function UkraineMap({ alertedRegions }: UkraineMapProps) {
           {/* Radar scan effect */}
           <div className="radar-overlay" />
 
-          <UkraineMapSVG
+          <UkraineMapGeoJSON
             alertedRegions={alertedRegions}
             hoveredRegion={hoveredRegion}
             selectedRegion={selectedRegion}
@@ -149,15 +156,15 @@ export default function UkraineMap({ alertedRegions }: UkraineMapProps) {
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="mt-4 mb-3 flex justify-center gap-3 font-[family-name:var(--font-pipboy)] text-[10px] sm:mt-4 sm:mb-0 sm:gap-8 sm:text-sm">
-        <div className="flex items-center gap-1 sm:gap-2">
-          <div className="legend-safe h-2.5 w-2.5 rounded-[2px] bg-[var(--pipboy-green-dark)] sm:h-4 sm:w-4" />
-          <span className="glow-text">Безпечно</span>
+      {/* Legend - hidden on mobile (shown in MobileRegionDrawer instead) */}
+      <div className="mt-4 hidden justify-center gap-8 font-[family-name:var(--font-pipboy)] text-sm sm:flex">
+        <div className="flex items-center gap-2">
+          <div className="legend-safe h-4 w-4 shrink-0 -translate-y-0.5 rounded-[2px] bg-[var(--pipboy-green-dark)]" />
+          <span className="glow-text leading-none">Безпечно</span>
         </div>
-        <div className="flex items-center gap-1 sm:gap-2">
-          <div className="legend-alert h-2.5 w-2.5 rounded-[2px] bg-[var(--pipboy-alert-red-dim)] sm:h-4 sm:w-4" />
-          <span className="glow-text-red">Тривога</span>
+        <div className="flex items-center gap-2">
+          <div className="legend-alert h-4 w-4 shrink-0 -translate-y-0.5 rounded-[2px] bg-[var(--pipboy-alert-red-dim)]" />
+          <span className="glow-text-red leading-none">Тривога</span>
         </div>
       </div>
     </div>

@@ -40,28 +40,10 @@ const retryCount = new LRUCacheManager<number, number>({
   cleanupIntervalMs: 15 * 60 * 1000, // Cleanup every 15 min
 });
 
-let lastFetchTime = 0;
-let fetchQueue: number[] = [];
-
-// Initialization state tracking with Promise-based lock to prevent race conditions
-interface InitializationState {
-  isComplete: boolean;
-  completedCount: number;
-  totalCount: number;
-  initPromise: Promise<void> | null;
-}
-
 const allUids = getAllUids();
 
-const initState: InitializationState = {
-  isComplete: false,
-  completedCount: 0,
-  totalCount: allUids.length,
-  initPromise: null,
-};
-
-// Minimum regions to fetch before responding (25% threshold)
-const MIN_INIT_REGIONS = Math.ceil(allUids.length * 0.25);
+// Background fetch state
+let isBackgroundFetchStarted = false;
 
 // Fetch history for a single region
 async function fetchRegionHistory(uid: number): Promise<AlertsInUaAlert[]> {
@@ -143,109 +125,60 @@ function alertToMessages(alert: AlertsInUaAlert): AlertMessage[] {
   return messages;
 }
 
-// Internal initialization logic (separated for Promise-based lock pattern)
-async function performInitialization(): Promise<void> {
+// Background fetch logic - fetches all regions with rate limiting
+async function performBackgroundFetch(): Promise<void> {
+  console.log("[history] Starting background fetch for all regions");
+
   // Build queue of regions needing data
-  fetchQueue = allUids.filter((uid) => !historyCache.has(uid));
+  const regionsToFetch = allUids.filter((uid) => !historyCache.has(uid));
 
-  // Fetch minimum number of regions synchronously
-  const minFetchCount = Math.min(MIN_INIT_REGIONS, fetchQueue.length);
-
-  for (let i = 0; i < minFetchCount; i++) {
-    const uid = fetchQueue.shift();
-    if (!uid) break;
+  for (const uid of regionsToFetch) {
+    // Check if already cached (might have been fetched by another request)
+    if (historyCache.has(uid)) continue;
 
     try {
       const alerts = await fetchRegionHistory(uid);
       historyCache.set(uid, alerts);
-      lastFetchTime = Date.now();
-      initState.completedCount++;
+      console.log(
+        `[history] Cached region ${uid}, total cached: ${allUids.filter((u) => historyCache.has(u)).length}/${allUids.length}`,
+      );
 
-      // Rate limiting between requests
-      if (i < minFetchCount - 1) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, POLLING_CONFIG.HISTORY_MIN_FETCH_INTERVAL_MS),
-        );
-      }
+      // Rate limiting between requests (required by API)
+      await new Promise((resolve) =>
+        setTimeout(resolve, POLLING_CONFIG.HISTORY_MIN_FETCH_INTERVAL_MS),
+      );
     } catch (error) {
-      console.error(`Failed to fetch history for region ${uid}:`, error);
+      console.error(`[history] Failed to fetch region ${uid}:`, error);
       const attempts = retryCount.get(uid) ?? 0;
 
       if (attempts < POLLING_CONFIG.MAX_RETRY_ATTEMPTS) {
         retryCount.set(uid, attempts + 1);
-        fetchQueue.push(uid); // Re-queue
       }
     }
   }
 
-  initState.isComplete = initState.completedCount >= MIN_INIT_REGIONS;
+  console.log("[history] Background fetch complete");
 }
 
-// Initialize and fetch minimum regions before responding
-// Uses Promise-based lock to prevent race conditions with concurrent requests
-async function ensureInitialization(): Promise<void> {
-  // Already initialized
-  if (initState.isComplete) {
+// Start background fetch if not already running (non-blocking)
+function startBackgroundFetchIfNeeded(): void {
+  if (isBackgroundFetchStarted) return;
+
+  isBackgroundFetchStarted = true;
+
+  // Check if all regions are cached
+  const uncachedCount = allUids.filter((uid) => !historyCache.has(uid)).length;
+  if (uncachedCount === 0) {
+    console.log("[history] All regions already cached");
     return;
   }
 
-  // If initialization is in progress, wait for it to complete
-  if (initState.initPromise) {
-    await initState.initPromise;
-    return;
-  }
-
-  // Start initialization and store the Promise for concurrent callers
-  initState.initPromise = performInitialization();
-
-  try {
-    await initState.initPromise;
-  } finally {
-    // Clear the Promise after completion (allows re-init if needed)
-    initState.initPromise = null;
-  }
-}
-
-// Try to fetch one region from the queue (respecting rate limits)
-async function tryFetchNextRegion(): Promise<void> {
-  if (fetchQueue.length === 0) return;
-  if (Date.now() - lastFetchTime < POLLING_CONFIG.HISTORY_MIN_FETCH_INTERVAL_MS)
-    return;
-
-  const uid = fetchQueue.shift();
-  if (!uid) return;
-
-  try {
-    const alerts = await fetchRegionHistory(uid);
-    historyCache.set(uid, alerts);
-    lastFetchTime = Date.now();
-    retryCount.delete(uid);
-  } catch (error) {
-    console.error(`Failed to fetch history for region ${uid}:`, error);
-
-    const attempts = retryCount.get(uid) ?? 0;
-    if (attempts < POLLING_CONFIG.MAX_RETRY_ATTEMPTS) {
-      retryCount.set(uid, attempts + 1);
-      fetchQueue.push(uid);
-    } else {
-      console.warn(
-        `Skipping region ${uid} after ${POLLING_CONFIG.MAX_RETRY_ATTEMPTS} failed attempts`,
-      );
-      retryCount.delete(uid);
-    }
-  }
-}
-
-// Check for stale cache entries and queue for refresh
-function queueStaleEntriesForRefresh(): void {
-  const staleUids = allUids.filter((uid) => !historyCache.has(uid));
-
-  // Add stale UIDs to queue if not already present
-  for (const uid of staleUids) {
-    if (!fetchQueue.includes(uid)) {
-      fetchQueue.push(uid);
-    }
-  }
+  console.log(
+    `[history] Starting background fetch for ${uncachedCount} regions`,
+  );
+  performBackgroundFetch().catch((error) => {
+    console.error("[history] Background fetch error:", error);
+  });
 }
 
 export async function GET() {
@@ -259,14 +192,8 @@ export async function GET() {
     );
   }
 
-  // CRITICAL FIX: Wait for minimum initialization before responding
-  await ensureInitialization();
-
-  // Check for stale entries and queue for refresh
-  queueStaleEntriesForRefresh();
-
-  // Try to fetch next region in background (rate-limited)
-  tryFetchNextRegion().catch(console.error);
+  // Start background fetch if needed (non-blocking)
+  startBackgroundFetchIfNeeded();
 
   // Collect all cached history using valid keys from LRU cache
   const allMessages: AlertMessage[] = [];
@@ -285,6 +212,8 @@ export async function GET() {
   // Sort by timestamp descending (newest first)
   allMessages.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
+  const pendingRegions = allUids.length - cachedRegions.length;
+
   const responseData: HistoryApiResponse = {
     messages: allMessages.slice(0, 500).map((msg) => ({
       ...msg,
@@ -294,12 +223,14 @@ export async function GET() {
     lastUpdate: new Date().toISOString(),
     cacheStatus: {
       cachedRegions: cachedRegions.length,
-      pendingRegions: fetchQueue.length,
+      pendingRegions,
     },
   };
 
   const response = NextResponse.json(responseData);
-  response.headers.set("Cache-Control", "public, max-age=30");
+
+  // Short cache time so client gets updates as more regions are fetched
+  response.headers.set("Cache-Control", "public, max-age=10");
 
   return response;
 }

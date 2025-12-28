@@ -1,12 +1,11 @@
 // Public API for the alerts feature
 
+// React Query hooks (for direct usage)
+export { useActiveAlerts } from "./api/get-active-alerts";
+export { useAlertHistoryQuery } from "./api/get-alert-history";
 // Hooks (primary exports for consumers)
 export type { UseAlertHistoryResult } from "./hooks/use-alert-history";
 export { type UseAlertsResult, useAlerts } from "./hooks/use-alerts";
-export {
-  type UseAppInitializationResult,
-  useAppInitialization,
-} from "./hooks/use-app-initialization";
 export { type UseMessagesResult, useMessages } from "./hooks/use-messages";
 export { usePrefetchData } from "./hooks/use-prefetch-data";
 

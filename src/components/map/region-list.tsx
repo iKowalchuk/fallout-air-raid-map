@@ -11,6 +11,9 @@ interface RegionListProps {
   onRegionClick?: (regionId: string) => void;
 }
 
+// Crimea and Sevastopol are always shown as alert (red)
+const ALWAYS_ALERT_REGIONS = new Set(["crimea", "sevastopol"]);
+
 export default function RegionList({
   regions,
   alertedRegions,
@@ -25,7 +28,9 @@ export default function RegionList({
       aria-label="Список регіонів України"
     >
       {regions.map((region, index) => {
-        const isAlert = alertedRegions.includes(region.id);
+        const isAlert =
+          alertedRegions.includes(region.id) ||
+          ALWAYS_ALERT_REGIONS.has(region.id);
         const isHovered = hoveredRegion === region.id;
 
         return (
