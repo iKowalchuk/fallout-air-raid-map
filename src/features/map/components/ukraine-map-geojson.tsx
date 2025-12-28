@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { getRegionById, isRegionAlerted } from "@/data/regions";
 import { useUkraineGeoJSON } from "../api";
 import {
   geoJSONToSVGPath,
@@ -54,12 +55,8 @@ export default function UkraineMapGeoJSON(props: UkraineMapGeoJSONProps) {
     return paths;
   }, [geoJSON]);
 
-  // Crimea and Sevastopol are always shown as alert (red)
-  const ALWAYS_ALERT_REGIONS = new Set(["crimea", "sevastopol"]);
-
   const getRegionClass = (regionId: string) => {
-    const isAlert =
-      alertedRegions.includes(regionId) || ALWAYS_ALERT_REGIONS.has(regionId);
+    const isAlert = isRegionAlerted(regionId, alertedRegions);
     const isHovered = hoveredRegion === regionId;
     const isSelected = selectedRegion === regionId;
 
@@ -139,35 +136,42 @@ export default function UkraineMapGeoJSON(props: UkraineMapGeoJSONProps) {
 
       {/* Render all regions */}
       <g filter="url(#glow)">
-        {regionPaths.map(({ id, path }) => (
-          // biome-ignore lint/a11y/useSemanticElements: SVG path elements cannot be replaced with semantic HTML elements
-          <path
-            key={id}
-            id={id}
-            d={path}
-            className={getRegionClass(id)}
-            role="button"
-            aria-label={id}
-            tabIndex={0}
-            onMouseEnter={() => onRegionHover?.(id)}
-            onMouseLeave={() => onRegionHover?.(null)}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              onRegionClick?.(id);
-            }}
-            onClick={() => {
-              onRegionClick?.(id);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
+        {regionPaths.map(({ id, path }) => {
+          const regionData = getRegionById(id);
+          const regionName = regionData?.nameUa || id;
+          const isAlert = isRegionAlerted(id, alertedRegions);
+          const statusText = isAlert ? "повітряна тривога" : "безпечно";
+
+          return (
+            // biome-ignore lint/a11y/useSemanticElements: SVG path elements cannot be replaced with semantic HTML elements
+            <path
+              key={id}
+              id={id}
+              d={path}
+              className={getRegionClass(id)}
+              role="button"
+              aria-label={`${regionName}, ${statusText}`}
+              tabIndex={0}
+              onMouseEnter={() => onRegionHover?.(id)}
+              onMouseLeave={() => onRegionHover?.(null)}
+              onTouchStart={(e) => {
                 e.preventDefault();
                 onRegionClick?.(id);
-              }
-            }}
-          >
-            <title>{id}</title>
-          </path>
-        ))}
+              }}
+              onClick={() => {
+                onRegionClick?.(id);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onRegionClick?.(id);
+                }
+              }}
+            >
+              <title>{regionName}</title>
+            </path>
+          );
+        })}
       </g>
 
       {/* Render hovered/selected region on top for full border visibility */}

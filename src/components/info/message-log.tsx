@@ -298,9 +298,9 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
                       aria-hidden="true"
                     />
 
-                    {/* Icon with accessible label - hidden on very small screens */}
+                    {/* Icon with accessible label - visible on sm screens and up */}
                     <span
-                      className={`message-icon xs:inline hidden sm:inline ${
+                      className={`message-icon hidden sm:inline ${
                         threatLevel === "high" || threatLevel === "medium"
                           ? "glow-text-red"
                           : threatLevel === "clear"
