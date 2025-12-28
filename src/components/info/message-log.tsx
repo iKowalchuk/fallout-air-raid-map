@@ -254,23 +254,7 @@ export default function MessageLog({ messages, cacheStatus }: MessageLogProps) {
           aria-atomic="false"
           className="message-log-container absolute inset-0 overflow-y-auto font-[family-name:var(--font-pipboy)]"
         >
-          {messages.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center gap-3 p-4">
-              <pre className="glow-text text-center font-mono text-[10px] opacity-60 sm:text-xs">
-                {`╔═══════════════════╗
-║    VAULT-TEC      ║
-║     SECURE        ║
-╚═══════════════════╝`}
-              </pre>
-              <span className="glow-text text-center text-xs opacity-50 sm:text-sm">
-                Немає активних повідомлень.
-                <br />
-                <span className="text-pipboy-green-dim">
-                  Залишайтеся в безпеці.
-                </span>
-              </span>
-            </div>
-          ) : (
+          {messages.length > 0 && (
             <div className="space-y-0.5">
               {messages.map((msg, index) => {
                 const threatLevel = getThreatLevel(msg.type);

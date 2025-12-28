@@ -88,14 +88,12 @@ export function useMessages(): UseMessagesResult {
   const {
     alerts,
     alertCount,
-    isLoading: alertsLoading,
     source: alertsSource,
     hasData: alertsHasData,
   } = useAlerts();
 
   const {
     messages: historyMessages,
-    isLoading: historyLoading,
     source: historySource,
     cacheStatus,
     hasData: historyHasData,
@@ -112,11 +110,21 @@ export function useMessages(): UseMessagesResult {
   // Data is available if either alerts or history has data
   const hasData = alertsHasData || historyHasData;
 
+  // Both data sources must be loaded before we can determine if there are messages
+  // This prevents showing EmptyState while history is still loading
+  const allDataLoaded = alertsHasData && historyHasData;
+
+  // Show loading only when:
+  // 1. Not all data sources have loaded yet, AND
+  // 2. We have no messages to show
+  // This prevents both skeleton and empty state flashing after global loader
+  const isInitialLoading = !allDataLoaded && messages.length === 0;
+
   return {
     messages,
     alertCount,
     isAlertActive: alertCount > 0,
-    isLoading: alertsLoading || historyLoading,
+    isLoading: isInitialLoading,
     hasData,
     source,
     cacheStatus,

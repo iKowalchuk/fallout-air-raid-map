@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { getRegionById, isRegionAlerted } from "@/data/regions";
+import { useCanHover } from "@/hooks/use-can-hover";
 import { useUkraineGeoJSON } from "../api";
 import {
   geoJSONToSVGPath,
@@ -25,7 +26,8 @@ export default function UkraineMapGeoJSON(props: UkraineMapGeoJSONProps) {
     onRegionHover,
     onRegionClick,
   } = props;
-  const { data: geoJSON, isLoading, isError, error } = useUkraineGeoJSON();
+  const { data: geoJSON, isLoading, isError } = useUkraineGeoJSON();
+  const canHover = useCanHover();
 
   // Pre-compute SVG paths from GeoJSON features
   const regionPaths = useMemo(() => {
@@ -72,31 +74,9 @@ export default function UkraineMapGeoJSON(props: UkraineMapGeoJSONProps) {
     return classes;
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="loading-spinner" />
-        <span className="glow-text ml-3 font-[family-name:var(--font-pipboy)]">
-          Завантаження карти...
-        </span>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-2">
-        <span className="glow-text-red font-[family-name:var(--font-pipboy)]">
-          Помилка завантаження карти
-        </span>
-        <span className="glow-text text-xs opacity-70">
-          {error?.message || "Невідома помилка"}
-        </span>
-      </div>
-    );
-  }
-
-  if (!regionPaths) {
+  // Don't render anything until GeoJSON is loaded
+  // Global loader handles the loading state
+  if (isLoading || isError || !regionPaths) {
     return null;
   }
 
@@ -152,8 +132,8 @@ export default function UkraineMapGeoJSON(props: UkraineMapGeoJSONProps) {
               role="button"
               aria-label={`${regionName}, ${statusText}`}
               tabIndex={0}
-              onMouseEnter={() => onRegionHover?.(id)}
-              onMouseLeave={() => onRegionHover?.(null)}
+              onMouseEnter={canHover ? () => onRegionHover?.(id) : undefined}
+              onMouseLeave={canHover ? () => onRegionHover?.(null) : undefined}
               onTouchStart={(e) => {
                 e.preventDefault();
                 onRegionClick?.(id);

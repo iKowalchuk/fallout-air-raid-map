@@ -15,8 +15,10 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.90.12",
+    "@tanstack/react-query": "^5.90.13",
     "@tanstack/react-query-devtools": "^5.91.1",
+    "@tanstack/react-query-persist-client": "^5.90.15",
+    "idb-keyval": "^6.2.2",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
