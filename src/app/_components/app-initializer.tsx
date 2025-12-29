@@ -1,5 +1,6 @@
 "use client";
 
+import { useIsRestoring } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
 import { AppInitializationLoader } from "@/components/common/loader";
 import { useActiveAlerts, useAlertHistoryQuery } from "@/features/alerts";
@@ -20,6 +21,10 @@ interface AppInitializerProps {
  * Shows a global loader only on cold start (first load with no cache).
  * Subsequent navigation between pages is instant (uses cache).
  *
+ * Uses useIsRestoring() to wait for IndexedDB cache restoration before
+ * checking data availability, preventing race conditions where queries
+ * would fetch from API before cached data is restored.
+ *
  * Lives in app layer to maintain unidirectional code flow: shared → features → app
  */
 export function AppInitializer({
@@ -28,12 +33,15 @@ export function AppInitializer({
 }: AppInitializerProps) {
   const { isInitialized, markAsInitialized } = useAppInitializationContext();
 
+  // Wait for IndexedDB cache restoration to complete before checking data
+  const isRestoring = useIsRestoring();
+
   // Use React Query hooks - they handle reactivity internally
   const alertsQuery = useActiveAlerts();
   const historyQuery = useAlertHistoryQuery();
 
-  // Determine loading and data states based on query success OR having data
-  // Note: Check for `data !== undefined` handles prefetched/cached data that
+  // Determine if queries have successfully loaded data.
+  // Check for `data !== undefined` to handle prefetched/cached data that
   // may not have status "success" yet during hydration
   const alertsReady =
     alertsQuery.status === "success" || alertsQuery.data !== undefined;
@@ -41,8 +49,10 @@ export function AppInitializer({
     historyQuery.status === "success" || historyQuery.data !== undefined;
 
   // Calculate if we have required data based on page needs
+  // Also require cache restoration to be complete to avoid race conditions
   const hasRequiredData =
-    requiredData === "alerts" ? alertsReady : alertsReady && historyReady;
+    !isRestoring &&
+    (requiredData === "alerts" ? alertsReady : alertsReady && historyReady);
 
   // Mark as initialized when required data is loaded
   useEffect(() => {
@@ -58,7 +68,7 @@ export function AppInitializer({
     return <>{children}</>;
   }
 
-  // On cold start, wait for required data before showing content
+  // On cold start, wait for cache restoration and required data before showing content
   if (!hasRequiredData) {
     return <AppInitializationLoader />;
   }
