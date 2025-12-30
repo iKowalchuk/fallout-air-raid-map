@@ -2,12 +2,13 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import {
-  type Persister,
-  PersistQueryClientProvider,
-} from "@tanstack/react-query-persist-client";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { type ReactNode, useState } from "react";
-import { createIndexedDBPersister } from "@/lib/react-query";
+import {
+  createIndexedDBPersister,
+  type EnhancedPersister,
+  usePersistenceLifecycle,
+} from "@/lib/react-query";
 
 interface QueryProviderProps {
   children: ReactNode;
@@ -37,7 +38,7 @@ declare global {
   // eslint-disable-next-line no-var
   var __queryClient: QueryClient | undefined;
   // eslint-disable-next-line no-var
-  var __queryPersister: Persister | null | undefined;
+  var __queryPersister: EnhancedPersister | null | undefined;
 }
 
 function getOrCreateQueryClient(): QueryClient {
@@ -52,7 +53,7 @@ function getOrCreateQueryClient(): QueryClient {
   return globalThis.__queryClient;
 }
 
-function getOrCreatePersister(): Persister | null {
+function getOrCreatePersister(): EnhancedPersister | null {
   if (typeof window === "undefined") {
     return null;
   }
@@ -65,6 +66,14 @@ function getOrCreatePersister(): Persister | null {
 export function QueryProvider({ children }: QueryProviderProps) {
   const [queryClient] = useState(getOrCreateQueryClient);
   const [clientPersister] = useState(getOrCreatePersister);
+
+  // Set up lifecycle-based persistence for mobile Safari
+  // This ensures cache is saved before iOS suspends the tab
+  usePersistenceLifecycle({
+    persister: clientPersister,
+    throttleMs: 2000,
+    enabled: true,
+  });
 
   const devtools = process.env.NODE_ENV === "development" && (
     <ReactQueryDevtools initialIsOpen={false} />

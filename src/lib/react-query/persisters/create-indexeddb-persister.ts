@@ -8,6 +8,18 @@ import { dateAwareSerializer } from "@/lib/react-query/serializers/date-aware-se
 const CACHE_KEY = "fallout-air-raid-cache";
 
 /**
+ * Extended Persister interface with flush capability for lifecycle events.
+ */
+export interface EnhancedPersister extends Persister {
+  /**
+   * Immediately flushes any pending writes to IndexedDB.
+   * Waits for any in-progress write to complete first.
+   * Used by lifecycle hooks to ensure data is persisted before tab suspension.
+   */
+  flush: () => Promise<void>;
+}
+
+/**
  * Validates that the deserialized value has the required PersistedClient structure.
  */
 function isValidPersistedClient(value: unknown): value is PersistedClient {
@@ -27,8 +39,9 @@ function isValidPersistedClient(value: unknown): value is PersistedClient {
  * - Uses idb-keyval for simple IndexedDB access
  * - Custom Date serialization via dateAwareSerializer
  * - Graceful error handling with fallback to non-persistent mode
+ * - Flush method for lifecycle-based persistence (mobile Safari)
  */
-export function createIndexedDBPersister(): Persister | null {
+export function createIndexedDBPersister(): EnhancedPersister | null {
   if (typeof window === "undefined") {
     return null;
   }
@@ -40,15 +53,59 @@ export function createIndexedDBPersister(): Persister | null {
     return null;
   }
 
+  // Track pending write for flush capability
+  let pendingWrite: string | null = null;
+  let currentWritePromise: Promise<void> | null = null;
+
+  /**
+   * Executes the actual write to IndexedDB.
+   * Returns a promise that resolves when the write completes.
+   */
+  async function executeWrite(): Promise<void> {
+    if (pendingWrite === null) {
+      return;
+    }
+
+    const dataToWrite = pendingWrite;
+    pendingWrite = null;
+
+    try {
+      await set(CACHE_KEY, dataToWrite);
+    } catch (error) {
+      console.error("[QueryPersister] Failed to write cache:", error);
+      // Don't restore failed data - next write will have latest state
+    }
+
+    // Process any writes that were queued during this write
+    if (pendingWrite !== null) {
+      await executeWrite();
+    }
+  }
+
+  /**
+   * Starts a write operation, ensuring only one runs at a time.
+   * Returns the promise for the current write operation.
+   */
+  function startWrite(): Promise<void> {
+    if (currentWritePromise === null) {
+      currentWritePromise = executeWrite().finally(() => {
+        currentWritePromise = null;
+      });
+    }
+    return currentWritePromise;
+  }
+
   return {
     persistClient: async (client: PersistedClient) => {
       try {
         const serialized = dateAwareSerializer.serialize(client);
-        await set(CACHE_KEY, serialized);
+        pendingWrite = serialized;
+        await startWrite();
       } catch (error) {
-        console.error("[QueryPersister] Failed to persist cache:", error);
+        console.error("[QueryPersister] Failed to queue cache write:", error);
       }
     },
+
     restoreClient: async () => {
       try {
         const cached = await get<string>(CACHE_KEY);
@@ -68,11 +125,24 @@ export function createIndexedDBPersister(): Persister | null {
         return undefined;
       }
     },
+
     removeClient: async () => {
       try {
         await del(CACHE_KEY);
       } catch (error) {
         console.error("[QueryPersister] Failed to remove cache:", error);
+      }
+    },
+
+    flush: async () => {
+      // Wait for any in-progress write to complete first
+      if (currentWritePromise !== null) {
+        await currentWritePromise;
+      }
+
+      // Then flush any pending data
+      if (pendingWrite !== null) {
+        await startWrite();
       }
     },
   };
